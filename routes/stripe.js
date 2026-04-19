@@ -5,7 +5,7 @@ const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 const prisma = new PrismaClient();
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+const getStripe = () => Stripe(process.env.STRIPE_SECRET_KEY);
 
 // POST /api/stripe/checkout — crea sessione di pagamento
 router.post('/checkout', authenticateToken, async (req, res) => {
@@ -14,7 +14,7 @@ router.post('/checkout', authenticateToken, async (req, res) => {
 
     let customerId = user.stripeCustomerId;
     if (!customerId) {
-      const customer = await stripe.customers.create({
+      const customer = await getStripe().customers.create({
         email: user.email,
         name: user.name,
         metadata: { userId: user.id }
@@ -26,7 +26,7 @@ router.post('/checkout', authenticateToken, async (req, res) => {
       });
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
       line_items: [{
@@ -53,7 +53,7 @@ router.post('/portal', authenticateToken, async (req, res) => {
       return res.status(400).json({ success: false, error: 'Nessun abbonamento attivo' });
     }
 
-    const session = await stripe.billingPortal.sessions.create({
+    const session = await getStripe().billingPortal.sessions.create({
       customer: user.stripeCustomerId,
       return_url: `${process.env.APP_URL}/`
     });
@@ -71,7 +71,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    event = getStripe().webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
     console.error('Webhook signature error:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -109,7 +109,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 });
 
 async function activatePro(customerId, subscriptionId) {
-  const sub = await stripe.subscriptions.retrieve(subscriptionId);
+  const sub = await getStripe().subscriptions.retrieve(subscriptionId);
   const expiresAt = new Date(sub.current_period_end * 1000);
 
   await prisma.user.updateMany({

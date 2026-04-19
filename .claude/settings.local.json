@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/lorenzo.crolla/**)",
+      "Bash(npx @react-native-community/cli@latest init FamilyBudget)"
+    ]
+  }
+}
