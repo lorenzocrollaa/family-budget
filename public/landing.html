@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FamilyBank — Il budget di famiglia, finalmente intelligente</title>
+<meta name="description" content="L'AI legge i tuoi estratti conto, categorizza ogni movimento e ti dà una visione completa del budget familiare. Gratis, privato, potente.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #07070f;
+  --bg2: #0d0d1a;
+  --accent: #6366f1;
+  --accent2: #818cf8;
+  --accent3: #a78bfa;
+  --green: #10b981;
+  --red: #f43f5e;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --border: rgba(99,102,241,0.2);
+  --glass: rgba(255,255,255,0.04);
+  --glass-border: rgba(255,255,255,0.08);
+  --r: 20px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ── Noise texture overlay ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 6%;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s, background 0.3s;
+}
+nav.scrolled {
+  background: rgba(7,7,15,0.85);
+  border-color: var(--glass-border);
+}
+.nav-logo {
+  font-size: 20px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff 30%, var(--accent2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+}
+.nav-logo span { color: var(--accent2); -webkit-text-fill-color: var(--accent2); }
+.nav-links { display: flex; align-items: center; gap: 32px; }
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-cta {
+  background: var(--accent);
+  color: #fff !important;
+  padding: 9px 22px;
+  border-radius: 50px;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  transition: opacity 0.2s, transform 0.2s !important;
+}
+.nav-cta:hover { opacity: 0.9; transform: translateY(-1px); }
+.nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+.nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; }
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 120px 6% 80px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.hero-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.25;
+}
+.hero-blob-1 { width: 600px; height: 600px; background: radial-gradient(#6366f1, #a78bfa); top: -200px; left: -100px; animation: float1 12s ease-in-out infinite; }
+.hero-blob-2 { width: 400px; height: 400px; background: radial-gradient(#10b981, #6366f1); bottom: -100px; right: 10%; animation: float2 15s ease-in-out infinite; }
+.hero-blob-3 { width: 300px; height: 300px; background: radial-gradient(#f43f5e, #6366f1); top: 30%; right: 20%; opacity: 0.15; animation: float1 18s ease-in-out infinite reverse; }
+
+@keyframes float1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(30px,20px) scale(1.05); } }
+@keyframes float2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-20px,-30px) scale(1.08); } }
+
+/* Stars */
+.hero-stars { position: absolute; inset: 0; }
+.star { position: absolute; border-radius: 50%; background: white; animation: twinkle var(--d) ease-in-out infinite; }
+@keyframes twinkle { 0%,100% { opacity: var(--o); transform: scale(1); } 50% { opacity: 0.1; transform: scale(0.6); } }
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+.hero-text {}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(99,102,241,0.12);
+  border: 1px solid rgba(99,102,241,0.3);
+  border-radius: 50px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent2);
+  margin-bottom: 24px;
+  letter-spacing: 0.03em;
+}
+.hero-badge::before { content: '✦'; font-size: 10px; }
+.hero-h1 {
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -1.5px;
+  margin-bottom: 22px;
+}
+.hero-h1 .grad {
+  background: linear-gradient(135deg, #fff 20%, var(--accent2) 60%, var(--accent3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+  font-size: 17px;
+  color: var(--muted);
+  max-width: 480px;
+  margin-bottom: 40px;
+  line-height: 1.7;
+}
+.hero-actions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent3));
+  color: #fff;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 14px 28px;
+  border-radius: 50px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 8px 32px rgba(99,102,241,0.4);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(99,102,241,0.55); }
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 14px 20px;
+  border-radius: 50px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.btn-secondary:hover { color: var(--text); border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.07); }
+.hero-trust {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 32px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.hero-trust-avatars { display: flex; }
+.hero-trust-avatars span {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  margin-left: -8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent3));
+}
+.hero-trust-avatars span:first-child { margin-left: 0; }
+
+/* Phone mockup */
+.hero-phone {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+.phone-wrap {
+  position: relative;
+  animation: phonefloat 6s ease-in-out infinite;
+}
+@keyframes phonefloat {
+  0%,100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-16px) rotate(1deg); }
+}
+.phone-mockup {
+  width: 260px;
+  height: 560px;
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border-radius: 42px;
+  border: 1.5px solid rgba(255,255,255,0.14);
+  box-shadow:
+    0 0 0 8px #111118,
+    0 0 0 9px rgba(255,255,255,0.06),
+    0 40px 80px -10px rgba(0,0,0,0.9),
+    inset 0 0 0 1px rgba(255,255,255,0.04);
+  overflow: hidden;
+  position: relative;
+}
+.pm-island {
+  position: absolute;
+  top: 12px; left: 50%;
+  transform: translateX(-50%);
+  width: 90px; height: 28px;
+  background: #000;
+  border-radius: 16px;
+  z-index: 10;
+}
+.pm-statusbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 44px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 16px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  z-index: 9;
+}
+.pm-statusbar-right { display: flex; align-items: center; gap: 4px; font-size: 10px; }
+/* Balance card in mockup */
+.pm-card {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 200px;
+  background: linear-gradient(160deg, #1e1b4b 0%, #312e81 50%, #1d4ed8 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 20px;
+}
+.pm-card-label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 4px;
+}
+.pm-card-amount {
+  font-size: 32px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -1px;
+  font-family: 'Outfit', sans-serif;
+}
+.pm-card-sub { font-size: 9px; color: rgba(255,255,255,0.45); margin-top: 4px; }
+/* Stats row in mockup */
+.pm-stats {
+  position: absolute;
+  top: 208px; left: 10px; right: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.pm-stat {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  padding: 8px 6px;
+  text-align: center;
+}
+.pm-stat-val { font-size: 12px; font-weight: 800; }
+.pm-stat-lbl { font-size: 7px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+/* Transaction list in mockup */
+.pm-txs {
+  position: absolute;
+  top: 310px; left: 10px; right: 10px;
+}
+.pm-tx-title {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.pm-tx {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 7px 8px;
+  margin-bottom: 5px;
+}
+.pm-tx-icon {
+  width: 26px; height: 26px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.pm-tx-info { flex: 1; }
+.pm-tx-name { font-size: 9px; font-weight: 600; }
+.pm-tx-cat { font-size: 7px; color: var(--muted); margin-top: 1px; }
+.pm-tx-amt { font-size: 10px; font-weight: 700; }
+/* Glow behind phone */
+.phone-glow {
+  position: absolute;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(99,102,241,0.5), transparent 70%);
+  border-radius: 50%;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: -1;
+  filter: blur(40px);
+  animation: glowpulse 4s ease-in-out infinite;
+}
+@keyframes glowpulse { 0%,100% { opacity: 0.5; transform: translate(-50%,-50%) scale(1); } 50% { opacity: 0.8; transform: translate(-50%,-50%) scale(1.1); } }
+
+/* Floating badges */
+.phone-badge {
+  position: absolute;
+  background: var(--bg2);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  backdrop-filter: blur(10px);
+}
+.phone-badge-1 { left: -80px; top: 120px; animation: badgefloat 5s ease-in-out infinite; }
+.phone-badge-2 { right: -70px; top: 260px; animation: badgefloat 7s ease-in-out infinite 1s; }
+.phone-badge-3 { left: -60px; bottom: 140px; animation: badgefloat 6s ease-in-out infinite 2s; }
+@keyframes badgefloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.badge-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── SECTION COMMON ── */
+section { padding: 100px 6%; }
+.section-inner { max-width: 1200px; margin: 0 auto; }
+.section-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 16px;
+}
+.section-tag::before { content: ''; width: 20px; height: 1px; background: var(--accent2); display: inline-block; }
+.section-h2 {
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -1px;
+  margin-bottom: 16px;
+}
+.section-sub {
+  font-size: 17px;
+  color: var(--muted);
+  max-width: 560px;
+  line-height: 1.7;
+}
+.grad-text {
+  background: linear-gradient(135deg, var(--accent2), var(--accent3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── STATS STRIP ── */
+.stats-strip {
+  padding: 0 6% 60px;
+}
+.stats-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--glass-border);
+  border-radius: var(--r);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+}
+.stat-box {
+  background: var(--bg2);
+  padding: 36px 28px;
+  text-align: center;
+}
+.stat-num {
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: -2px;
+  background: linear-gradient(135deg, #fff, var(--accent2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.stat-label { font-size: 14px; color: var(--muted); font-weight: 500; }
+
+/* ── FEATURES ── */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 60px;
+}
+.feature-card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r);
+  padding: 32px 28px;
+  transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(99,102,241,0.4), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.feature-card:hover { border-color: rgba(99,102,241,0.3); transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+.feature-card:hover::before { opacity: 1; }
+.feature-card.big { grid-column: span 2; }
+.feature-icon {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+.fi-purple { background: rgba(99,102,241,0.15); }
+.fi-green  { background: rgba(16,185,129,0.15); }
+.fi-blue   { background: rgba(59,130,246,0.15); }
+.fi-pink   { background: rgba(244,63,94,0.15); }
+.fi-amber  { background: rgba(251,191,36,0.15); }
+.feature-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+.feature-card p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+.feature-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+.ftag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 50px;
+  background: rgba(99,102,241,0.1);
+  border: 1px solid rgba(99,102,241,0.2);
+  color: var(--accent2);
+}
+
+/* ── HOW IT WORKS ── */
+.how-section { background: var(--bg2); }
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  margin-top: 60px;
+  position: relative;
+}
+.steps::before {
+  content: '';
+  position: absolute;
+  top: 28px;
+  left: calc(16.66% + 14px);
+  right: calc(16.66% + 14px);
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent), rgba(99,102,241,0.2));
+}
+.step { text-align: center; position: relative; }
+.step-num {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent3));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 900;
+  margin: 0 auto 24px;
+  box-shadow: 0 0 0 6px rgba(99,102,241,0.12);
+  position: relative;
+  z-index: 1;
+}
+.step h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+.step p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+/* ── BANKS ── */
+.banks-section {}
+.banks-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 48px; }
+.banks-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.bank-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 50px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: border-color 0.2s, background 0.2s;
+}
+.bank-pill:hover { border-color: var(--border); background: rgba(99,102,241,0.05); }
+.bank-icon { font-size: 18px; }
+
+/* ── TESTIMONIALS ── */
+.testimonials-section { background: var(--bg2); }
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 56px;
+}
+.tcard {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r);
+  padding: 28px;
+  transition: border-color 0.3s;
+}
+.tcard:hover { border-color: rgba(99,102,241,0.25); }
+.tcard-stars { color: #fbbf24; font-size: 13px; letter-spacing: 2px; margin-bottom: 14px; }
+.tcard-text { font-size: 15px; line-height: 1.7; color: var(--muted); margin-bottom: 20px; }
+.tcard-author { display: flex; align-items: center; gap: 12px; }
+.tcard-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  background: linear-gradient(135deg, var(--accent), var(--accent3));
+}
+.tcard-name { font-size: 14px; font-weight: 700; }
+.tcard-role { font-size: 12px; color: var(--muted); }
+
+/* ── CTA ── */
+.cta-section {
+  text-align: center;
+  padding: 120px 6%;
+  position: relative;
+  overflow: hidden;
+}
+.cta-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(99,102,241,0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+.cta-section h2 {
+  font-size: clamp(32px, 5vw, 60px);
+  font-weight: 900;
+  letter-spacing: -2px;
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+.cta-section p { font-size: 18px; color: var(--muted); margin-bottom: 40px; }
+.cta-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.cta-note { margin-top: 20px; font-size: 13px; color: var(--muted); }
+.cta-note span { color: var(--green); font-weight: 600; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--glass-border);
+  padding: 60px 6% 40px;
+}
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 48px;
+  margin-bottom: 48px;
+}
+.footer-brand p { font-size: 14px; color: var(--muted); margin-top: 12px; max-width: 260px; line-height: 1.7; }
+.footer-col h4 { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.footer-col a {
+  display: block;
+  font-size: 14px;
+  color: var(--muted);
+  text-decoration: none;
+  margin-bottom: 10px;
+  transition: color 0.2s;
+}
+.footer-col a:hover { color: var(--text); }
+.footer-bottom {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--glass-border);
+  padding-top: 24px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.footer-bottom-links { display: flex; gap: 24px; }
+.footer-bottom-links a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+.footer-bottom-links a:hover { color: var(--text); }
+
+/* ── SCROLL ANIMATIONS ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1024px) {
+  .hero-inner { grid-template-columns: 1fr; }
+  .hero-phone { display: none; }
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .feature-card.big { grid-column: span 1; }
+  .footer-inner { grid-template-columns: 1fr 1fr; }
+  .stats-inner { grid-template-columns: repeat(2, 1fr); }
+  .testimonials-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  nav { padding: 16px 5%; }
+  .nav-links { display: none; }
+  .nav-hamburger { display: flex; }
+  .hero { padding: 100px 5% 60px; }
+  .features-grid { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr; }
+  .steps::before { display: none; }
+  .banks-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .testimonials-grid { grid-template-columns: 1fr; }
+  .footer-inner { grid-template-columns: 1fr; }
+  .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+  section { padding: 70px 5%; }
+  .stats-inner { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <div class="nav-logo">Family<span>Bank</span></div>
+  <div class="nav-links">
+    <a href="#features">Funzionalità</a>
+    <a href="#how">Come funziona</a>
+    <a href="#banks">Banche</a>
+    <a href="#" class="nav-cta">Inizia gratis →</a>
+  </div>
+  <div class="nav-hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg">
+    <div class="hero-blob hero-blob-1"></div>
+    <div class="hero-blob hero-blob-2"></div>
+    <div class="hero-blob hero-blob-3"></div>
+    <div class="hero-stars" id="heroStars"></div>
+  </div>
+
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-badge reveal">L'AI per il tuo budget</div>
+      <h1 class="hero-h1 reveal reveal-delay-1">
+        Il tuo budget<br>
+        <span class="grad">finalmente</span><br>
+        intelligente.
+      </h1>
+      <p class="hero-sub reveal reveal-delay-2">
+        Carica l'estratto conto della tua banca. L'AI legge, categorizza e analizza ogni movimento automaticamente. Zero inserimento manuale, zero stress.
+      </p>
+      <div class="hero-actions reveal reveal-delay-3">
+        <a href="#" class="btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v13M6 9l6 6 6-6"/><rect x="3" y="18" width="18" height="3" rx="1.5"/></svg>
+          Prova gratis
+        </a>
+        <a href="#how" class="btn-secondary">
+          Come funziona
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="hero-trust reveal reveal-delay-4">
+        <div class="hero-trust-avatars">
+          <span>👨‍👩‍👧</span><span>👩‍💼</span><span>👨‍🍳</span><span>👩‍🎓</span>
+        </div>
+        <span>Usato da <strong style="color:var(--text)">centinaia di famiglie</strong> italiane</span>
+      </div>
+    </div>
+
+    <div class="hero-phone reveal reveal-delay-2">
+      <div class="phone-wrap">
+        <div class="phone-glow"></div>
+
+        <!-- Floating badges -->
+        <div class="phone-badge phone-badge-1">
+          <span class="badge-dot" style="background:#10b981"></span>
+          <span style="color:#10b981;font-size:13px;">+€ 2.840</span>
+          <span style="color:var(--muted);font-size:11px;">Stipendio</span>
+        </div>
+        <div class="phone-badge phone-badge-2">
+          <span style="font-size:16px;">🤖</span>
+          <div>
+            <div style="font-size:11px;font-weight:700;">AI Categorizzato</div>
+            <div style="font-size:10px;color:var(--muted);">127 transazioni</div>
+          </div>
+        </div>
+        <div class="phone-badge phone-badge-3">
+          <span style="font-size:16px;">✈️</span>
+          <div>
+            <div style="font-size:11px;font-weight:700;">Viaggio Roma</div>
+            <div style="font-size:10px;color:var(--muted);">€ 340 / € 500</div>
+          </div>
+        </div>
+
+        <div class="phone-mockup">
+          <div class="pm-island"></div>
+          <div class="pm-statusbar">
+            <span id="mockupTime">9:41</span>
+            <div class="pm-statusbar-right">
+              <svg width="13" height="10" viewBox="0 0 17 12" fill="white"><rect x="0" y="8" width="3" height="4" rx="0.5"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="0.5"/><rect x="9" y="3" width="3" height="9" rx="0.5"/></svg>
+              <svg width="13" height="10" viewBox="0 0 16 12" fill="none" stroke="white" stroke-linecap="round"><path d="M3.2 7 Q8 3 12.8 7" stroke-width="1.5"/><circle cx="8" cy="11.5" r="1" fill="white" stroke="none"/></svg>
+              <svg width="20" height="10" viewBox="0 0 25 12" fill="white"><rect x="0.5" y="0.5" width="21" height="11" rx="2.5" stroke="white" stroke-width="1" fill="none"/><rect x="22" y="3.5" width="2.5" height="5" rx="1"/><rect x="2" y="2" width="16" height="8" rx="1.5" opacity="0.9"/></svg>
+            </div>
+          </div>
+          <div class="pm-card">
+            <div class="pm-card-label">Saldo Famiglia Totale</div>
+            <div class="pm-card-amount">€ 4.280</div>
+            <div class="pm-card-sub">↑ Saldo positivo</div>
+          </div>
+          <div class="pm-stats">
+            <div class="pm-stat">
+              <div class="pm-stat-val" style="color:#10b981;">€ 5.200</div>
+              <div class="pm-stat-lbl">Entrate</div>
+            </div>
+            <div class="pm-stat">
+              <div class="pm-stat-val" style="color:#f43f5e;">€ 920</div>
+              <div class="pm-stat-lbl">Spese</div>
+            </div>
+            <div class="pm-stat">
+              <div class="pm-stat-val">127</div>
+              <div class="pm-stat-lbl">Movimenti</div>
+            </div>
+          </div>
+          <div class="pm-txs">
+            <div class="pm-tx-title">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 4h7M14 9h7M14 15h7M14 20h7"/></svg>
+              Ultime Transazioni
+            </div>
+            <div class="pm-tx">
+              <div class="pm-tx-icon fi-green">🛒</div>
+              <div class="pm-tx-info">
+                <div class="pm-tx-name">Esselunga</div>
+                <div class="pm-tx-cat">Supermercato</div>
+              </div>
+              <div class="pm-tx-amt" style="color:#f43f5e;">-€ 87</div>
+            </div>
+            <div class="pm-tx">
+              <div class="pm-tx-icon fi-blue">⛽</div>
+              <div class="pm-tx-info">
+                <div class="pm-tx-name">ENI</div>
+                <div class="pm-tx-cat">Carburante</div>
+              </div>
+              <div class="pm-tx-amt" style="color:#f43f5e;">-€ 60</div>
+            </div>
+            <div class="pm-tx">
+              <div class="pm-tx-icon fi-purple">☕</div>
+              <div class="pm-tx-info">
+                <div class="pm-tx-name">Bar Milano</div>
+                <div class="pm-tx-cat">Ristorazione</div>
+              </div>
+              <div class="pm-tx-amt" style="color:#f43f5e;">-€ 4,50</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-strip">
+  <div class="stats-inner">
+    <div class="stat-box reveal">
+      <div class="stat-num">15+</div>
+      <div class="stat-label">Banche italiane supportate</div>
+    </div>
+    <div class="stat-box reveal reveal-delay-1">
+      <div class="stat-num">99%</div>
+      <div class="stat-label">Accuratezza AI categorizzazione</div>
+    </div>
+    <div class="stat-box reveal reveal-delay-2">
+      <div class="stat-num">0€</div>
+      <div class="stat-label">Costo per iniziare</div>
+    </div>
+    <div class="stat-box reveal reveal-delay-3">
+      <div class="stat-num">2 min</div>
+      <div class="stat-label">Per caricare il primo estratto</div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-tag">Funzionalità</div>
+      <h2 class="section-h2">Tutto quello che serve,<br><span class="grad-text">niente di superfluo.</span></h2>
+      <p class="section-sub">Progettato per famiglie italiane. Ogni funzione ha uno scopo preciso.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card big reveal">
+        <div class="feature-icon fi-purple">🤖</div>
+        <h3>Categorizzazione AI automatica</h3>
+        <p>Carica il PDF dell'estratto conto. L'AI legge ogni movimento, riconosce il merchant e assegna la categoria giusta — spese, entrate, abbonamenti, carburante. Zero lavoro manuale.</p>
+        <div class="feature-tags">
+          <span class="ftag">Intesa Sanpaolo</span>
+          <span class="ftag">UniCredit</span>
+          <span class="ftag">BNL</span>
+          <span class="ftag">MPS</span>
+          <span class="ftag">+ 10 altri</span>
+        </div>
+      </div>
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon fi-green">📊</div>
+        <h3>Analisi mensile</h3>
+        <p>Grafici chiari su entrate, uscite e saldo. Naviga mese per mese e vedi come evolve il tuo budget nel tempo.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon fi-blue">✈️</div>
+        <h3>Gestione Viaggi</h3>
+        <p>Crea un viaggio, imposta il budget e tutte le spese di quel periodo vengono associate automaticamente.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon fi-pink">🔒</div>
+        <h3>100% privato</h3>
+        <p>I tuoi dati bancari non escono mai. Tutto elaborato localmente — nessuna credenziale condivisa.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon fi-amber">💡</div>
+        <h3>Budget familiare</h3>
+        <p>Un saldo unico per tutta la famiglia. Carica estratti da più conti e vedi il quadro completo in un colpo d'occhio.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="how-section">
+  <div class="section-inner">
+    <div class="reveal" style="text-align:center;">
+      <div class="section-tag">Come funziona</div>
+      <h2 class="section-h2">Tre passi.<br><span class="grad-text">Inizia in 2 minuti.</span></h2>
+      <p class="section-sub" style="margin:0 auto;">Nessuna configurazione complicata, nessun collegamento bancario obbligatorio.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">1</div>
+        <h3>Scarica l'estratto</h3>
+        <p>Vai nell'area personale della tua banca e scarica l'estratto conto in PDF. Tutti i formati sono supportati.</p>
+      </div>
+      <div class="step reveal reveal-delay-1">
+        <div class="step-num">2</div>
+        <h3>Carica in FamilyBank</h3>
+        <p>Trascina il file nell'app. L'AI analizza ogni riga in pochi secondi e categorizza ogni movimento.</p>
+      </div>
+      <div class="step reveal reveal-delay-2">
+        <div class="step-num">3</div>
+        <h3>Analizza e decidi</h3>
+        <p>Vedi subito dove vanno i tuoi soldi, mese per mese, per categoria. Prendi decisioni informate.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BANKS -->
+<section id="banks">
+  <div class="section-inner">
+    <div class="banks-header reveal">
+      <div>
+        <div class="section-tag">Compatibilità</div>
+        <h2 class="section-h2">Le principali banche<br><span class="grad-text">italiane. Tutte.</span></h2>
+      </div>
+      <p class="section-sub" style="max-width:320px;font-size:15px;">Il parser AI riconosce automaticamente il formato di ogni istituto. Aggiungiamo nuove banche ogni mese.</p>
+    </div>
+    <div class="banks-grid reveal reveal-delay-1">
+      <div class="bank-pill"><span class="bank-icon">🏛️</span> Intesa Sanpaolo</div>
+      <div class="bank-pill"><span class="bank-icon">🦁</span> UniCredit</div>
+      <div class="bank-pill"><span class="bank-icon">🏦</span> Banco BPM</div>
+      <div class="bank-pill"><span class="bank-icon">🌿</span> BNL</div>
+      <div class="bank-pill"><span class="bank-icon">🏔️</span> Monte dei Paschi</div>
+      <div class="bank-pill"><span class="bank-icon">💳</span> Fineco</div>
+      <div class="bank-pill"><span class="bank-icon">🔵</span> Credem</div>
+      <div class="bank-pill"><span class="bank-icon">⚡</span> ING Italia</div>
+      <div class="bank-pill"><span class="bank-icon">🟢</span> Widiba</div>
+      <div class="bank-pill"><span class="bank-icon">🏠</span> Cariparma</div>
+      <div class="bank-pill"><span class="bank-icon">🌊</span> Banca Mediolanum</div>
+      <div class="bank-pill"><span class="bank-icon">➕</span> e altri ancora…</div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials-section">
+  <div class="section-inner">
+    <div class="reveal" style="text-align:center;">
+      <div class="section-tag">Testimonianze</div>
+      <h2 class="section-h2">Le famiglie <span class="grad-text">ci raccontano.</span></h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="tcard reveal">
+        <div class="tcard-stars">★★★★★</div>
+        <p class="tcard-text">"Finalmente capisco dove finiscono i soldi ogni mese. Prima usavo Excel, ora in 2 minuti ho tutto già categorizzato."</p>
+        <div class="tcard-author">
+          <div class="tcard-avatar">👩‍💼</div>
+          <div>
+            <div class="tcard-name">Martina R.</div>
+            <div class="tcard-role">Milano — 2 figli</div>
+          </div>
+        </div>
+      </div>
+      <div class="tcard reveal reveal-delay-1">
+        <div class="tcard-stars">★★★★★</div>
+        <p class="tcard-text">"Mia moglie ed io finalmente abbiamo un quadro comune delle spese. La funzione viaggi è perfetta per organizzare le vacanze."</p>
+        <div class="tcard-author">
+          <div class="tcard-avatar">👨‍🍳</div>
+          <div>
+            <div class="tcard-name">Lorenzo P.</div>
+            <div class="tcard-role">Roma — Famiglia di 4</div>
+          </div>
+        </div>
+      </div>
+      <div class="tcard reveal reveal-delay-2">
+        <div class="tcard-stars">★★★★★</div>
+        <p class="tcard-text">"L'AI riconosce persino i pagamenti POS della pizzeria di quartiere. Incredibile quanto sia preciso."</p>
+        <div class="tcard-author">
+          <div class="tcard-avatar">👩‍🎓</div>
+          <div>
+            <div class="tcard-name">Giulia M.</div>
+            <div class="tcard-role">Torino — Coppia</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div style="position:relative;z-index:1;">
+    <div class="section-tag" style="justify-content:center;" class="reveal">Inizia oggi</div>
+    <h2 class="reveal">Smetti di indovinare.<br><span class="grad-text">Inizia a capire.</span></h2>
+    <p class="reveal reveal-delay-1">Il tuo budget familiare, sotto controllo. Gratis, per sempre.</p>
+    <div class="cta-actions reveal reveal-delay-2">
+      <a href="#" class="btn-primary" style="font-size:16px;padding:16px 36px;">
+        Prova FamilyBank gratis →
+      </a>
+    </div>
+    <p class="cta-note reveal reveal-delay-3"><span>✓ Gratis</span> &nbsp;·&nbsp; <span>✓ Nessuna carta richiesta</span> &nbsp;·&nbsp; <span>✓ Dati al sicuro</span></p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="nav-logo">Family<span>Bank</span></div>
+      <p>Il budget familiare intelligente. Carica l'estratto conto, lascia fare all'AI.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Prodotto</h4>
+      <a href="#">Funzionalità</a>
+      <a href="#">Banche supportate</a>
+      <a href="#">Come funziona</a>
+      <a href="#">Roadmap</a>
+    </div>
+    <div class="footer-col">
+      <h4>Supporto</h4>
+      <a href="#">FAQ</a>
+      <a href="#">Contattaci</a>
+      <a href="#">Guida rapida</a>
+    </div>
+    <div class="footer-col">
+      <h4>Legale</h4>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Termini di servizio</a>
+      <a href="#">Cookie Policy</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 FamilyBank. Tutti i diritti riservati.</span>
+    <div class="footer-bottom-links">
+      <a href="#">Privacy</a>
+      <a href="#">Termini</a>
+      <a href="#">Cookie</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── Scroll nav ──
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 40);
+});
+
+// ── Reveal on scroll ──
+const reveals = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+}, { threshold: 0.12 });
+reveals.forEach(el => io.observe(el));
+
+// ── Generate stars ──
+const starsContainer = document.getElementById('heroStars');
+for (let i = 0; i < 80; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  const size = Math.random() * 2.5 + 0.5;
+  const opacity = Math.random() * 0.6 + 0.1;
+  const duration = Math.random() * 4 + 2;
+  s.style.cssText = `
+    left:${Math.random()*100}%;
+    top:${Math.random()*100}%;
+    width:${size}px; height:${size}px;
+    --o:${opacity}; --d:${duration}s;
+    animation-delay:${Math.random()*5}s;
+  `;
+  starsContainer.appendChild(s);
+}
+
+// ── Mockup clock ──
+function updateMockupTime() {
+  const el = document.getElementById('mockupTime');
+  if (!el) return;
+  const n = new Date();
+  el.textContent = n.getHours() + ':' + String(n.getMinutes()).padStart(2,'0');
+}
+updateMockupTime();
+setInterval(updateMockupTime, 30000);
+
+// ── Mobile menu ──
+function toggleMenu() {
+  const links = document.querySelector('.nav-links');
+  links.style.display = links.style.display === 'flex' ? 'none' : 'flex';
+  links.style.flexDirection = 'column';
+  links.style.position = 'absolute';
+  links.style.top = '70px';
+  links.style.left = '0';
+  links.style.right = '0';
+  links.style.background = 'rgba(7,7,15,0.98)';
+  links.style.padding = '20px';
+  links.style.borderBottom = '1px solid rgba(255,255,255,0.07)';
+}
+
+// ── Smooth counter animation ──
+function animateCounter(el, target, suffix = '') {
+  let current = 0;
+  const step = target / 60;
+  const timer = setInterval(() => {
+    current = Math.min(current + step, target);
+    el.textContent = (Number.isInteger(target) ? Math.floor(current) : current.toFixed(0)) + suffix;
+    if (current >= target) clearInterval(timer);
+  }, 16);
+}
+const statsObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const nums = e.target.querySelectorAll('.stat-num');
+      nums.forEach(n => {
+        const text = n.textContent;
+        if (text.includes('+')) animateCounter(n, parseInt(text), '+');
+        else if (text.includes('%')) animateCounter(n, parseInt(text), '%');
+        else if (text.includes('min')) animateCounter(n, parseInt(text), ' min');
+        else if (text.includes('€')) { n.textContent = '0€'; }
+      });
+      statsObserver.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.5 });
+const statsInner = document.querySelector('.stats-inner');
+if (statsInner) statsObserver.observe(statsInner);
+</script>
+</body>
+</html>

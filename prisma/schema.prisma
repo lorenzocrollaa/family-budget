@@ -1,0 +1,298 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password         String
+  avatar           String?
+  createdAt        DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relazioni
+  transactions     Transaction[]
+  categories       Category[]
+  categoryKeywords CategoryKeyword[]  // ✅ Relazione per learning automatico
+  uploadedFiles    UploadedFile[]
+  travels          Travel[]
+  kids             Kid[]
+  bankConnections  BankConnection[]
+  bankAccounts     BankAccount[]
+
+  @@map("users")
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  date        DateTime
+  description String
+  amount      Decimal  @db.Decimal(10, 2)
+  category    String
+  categorizationReason  String?
+  
+  // Metadati
+  originalText String?
+  confidence   Float?
+  isVerified   Boolean   @default(false)
+  
+  // Relazioni
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryData Category? @relation(fields: [categoryName, userId], references: [name, userId])
+  categoryName String?
+  
+  // File source tracking
+  uploadedFileId String?
+  uploadedFile   UploadedFile? @relation(fields: [uploadedFileId], references: [id])
+  
+  // ✅ NUOVO: Flag per distinguere transazioni "Memoria/AI" da quelle reali
+  isMemory     Boolean   @default(false)
+  
+  // Relazione Viaggio
+  travelId     String?
+  travel       Travel?   @relation(fields: [travelId], references: [id])
+
+  // ✅ NUOVO: Relazione Figli (Paghette)
+  kidId        String?
+  kid          Kid?      @relation(fields: [kidId], references: [id])
+
+  // ✅ NUOVO: Relazione Banca (Open Banking)
+  bankAccountId  String?
+  bankAccount    BankAccount? @relation(fields: [bankAccountId], references: [id])
+  providerTransactionId String? @unique // ID Univoco fornito dalla banca (per evitare duplicati)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, date])
+  @@index([userId, category])
+  @@index([userId, isVerified])  // ✅ Nuovo index per query di transazioni da verificare
+  @@index([userId, isMemory])    // ✅ Nuovo index per filtrare transazioni reali
+  @@index([userId, kidId])       // ✅ Nuovo index per query veloci per figlio
+  @@index([userId, bankAccountId]) // ✅ Nuovo index per filtri per banca
+  @@map("transactions")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  emoji       String   @default("💸")
+  color       String   @default("#f87171")
+  isIncome    Boolean  @default(false)
+  
+  // Keywords per auto-categorizzazione
+  keywords    String[]
+  
+  // Statistiche calcolate
+  totalAmount Decimal  @default(0) @db.Decimal(10, 2)
+  transactionCount Int @default(0)
+  lastUsed    DateTime?
+  
+  // Relazioni
+  userId       String
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, userId])
+  @@map("categories")
+}
+
+// ✅ NUOVO MODELLO - Sistema di Learning Automatico
+model CategoryKeyword {
+  id            String   @id @default(cuid())
+  keyword       String   // Parola chiave estratta (es. "esselunga", "carrefour", "enel")
+  category      String   // Categoria associata (es. "Alimentari", "Bollette")
+  weight        Float    @default(1.0) // Peso della keyword (quanto è affidabile)
+  isUserDefined Boolean  @default(false) // true = definita dall'utente, false = estratta automaticamente
+  
+  // Relazioni
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([keyword, userId]) // Una keyword può apparire una sola volta per utente
+  @@index([userId, category]) // Index per query veloci per categoria
+  @@index([keyword]) // Index per ricerca per keyword
+  @@map("category_keywords")
+}
+
+model UploadedFile {
+  id           String   @id @default(cuid())
+  originalName String
+  fileName     String
+  filePath     String?
+  fileSize     Int
+  mimeType     String
+  
+  // Risultati parsing
+  transactionCount    Int      @default(0)
+  successfulParsing   Boolean  @default(false)
+  parsingErrors       String[]
+  parsingMethod       String?
+  
+  // Metadati estratti
+  detectedDateRange   String?
+  detectedBankFormat  String?
+  
+  // Relazioni
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("uploaded_files")
+}
+
+model Travel {
+  id          String   @id @default(cuid())
+  destination String
+  startDate   DateTime
+  endDate     DateTime
+  budget      Decimal  @db.Decimal(10, 2)
+  spent       Decimal  @default(0) @db.Decimal(10, 2)
+  
+  expenses    TravelExpense[]
+  transactions Transaction[]
+  
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("travels")
+}
+
+model TravelExpense {
+  id          String   @id @default(cuid())
+  description String
+  amount      Decimal  @db.Decimal(10, 2)
+  date        DateTime @default(now())
+  category    String?
+  
+  travelId String
+  travel   Travel @relation(fields: [travelId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+
+  @@map("travel_expenses")
+}
+
+model Kid {
+  id           String   @id @default(cuid())
+  name         String
+  age          Int
+  allowance    Decimal  @db.Decimal(10, 2)
+  balance      Decimal  @default(0) @db.Decimal(10, 2)
+  
+  goal         String?
+  goalAmount   Decimal? @db.Decimal(10, 2)
+  goalProgress Decimal  @default(0) @db.Decimal(5, 2)
+  
+  allowanceHistory AllowanceHistory[]
+  transactions     Transaction[]
+  
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("kids")
+}
+
+model AllowanceHistory {
+  id     String   @id @default(cuid())
+  amount Decimal  @db.Decimal(10, 2)
+  date   DateTime @default(now())
+  note   String?
+  
+  kidId String
+  kid   Kid    @relation(fields: [kidId], references: [id], onDelete: Cascade)
+  
+  @@map("allowance_history")
+}
+
+model BankConnection {
+  id              String   @id @default(cuid())
+  accessToken     String?  @unique
+  itemId          String?  @unique
+  institutionId   String   // ID Banca (es: ins_109508 per Sandbox)
+  institutionName String   @default("Banca Sconosciuta")
+  institutionLogo String?  // Base64 logo
+  institutionColor String? // Colore brand HEX
+  status          String   @default("ACTIVE") // ACTIVE, EXPERIED
+  cursor          String?  // Cursore temporale per sincronizzare le transazioni Plaid
+  
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  accounts        BankAccount[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("bank_connections")
+}
+
+model BankAccount {
+  id              String   @id @default(cuid())
+  accountId       String   // ID Account di Nordigen/GoCardless/SaltEdge (tolto unique)
+  iban            String?
+  ownerName       String?
+  name            String?  // Nome alternativo (es: "Conto Principale")
+  balance         Decimal? @db.Decimal(10, 2)
+  currency        String   @default("EUR")
+  
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  connectionId    String
+  connection      BankConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  
+  transactions    Transaction[]
+  
+  lastSync        DateTime?
+  isEnabled       Boolean  @default(true)  // ✅ Visibilità nella lista Banche
+  isConnected     Boolean  @default(false) // ✅ Connessione effettiva al Budget globale
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([accountId, connectionId]) // Unico solo all'interno della stessa connessione
+  @@map("bank_accounts")
+}
+
+// ✅ NUOVO: Cache per i merchant (Google Places API)
+model MerchantCache {
+  id           String   @id @default(cuid())
+  merchantName String   @unique
+  category     String
+  googleType   String?
+  location     String?
+  confidence   Float
+  source       String  // 'google_places', 'claude_ai', etc.
+  
+  userId       String? // Opzionale: se vogliamo cache per-utente
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([merchantName])
+  @@map("merchant_cache")
+}

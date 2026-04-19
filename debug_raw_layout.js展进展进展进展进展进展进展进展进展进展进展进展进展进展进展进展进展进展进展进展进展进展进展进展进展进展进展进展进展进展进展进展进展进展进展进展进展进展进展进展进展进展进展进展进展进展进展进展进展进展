@@ -1,0 +1,73 @@
+const fs = require('fs');
+const path = require('path');
+const pdfParse = require('pdf-parse');
+
+async function debugRaw() {
+    const testDir = './test_files';
+    const files = fs.readdirSync(testDir).filter(f => f.toLowerCase().includes('unicredit') || f.toLowerCase().includes('buddybank') || f.toLowerCase().includes('estratto conto'));
+
+    for (const file of files) {
+        if (file === 'documento.pdf') continue; // Skip BNL
+        
+        console.log(`\n\n===========================================`);
+        console.log(`🔍 RAW INSPECTION: ${file}`);
+        console.log(`===========================================`);
+        const filePath = path.join(testDir, file);
+        
+        try {
+            const buffer = fs.readFileSync(filePath);
+            
+            const options = {
+                pagerender: (pageData) => {
+                    return pageData.getTextContent().then(textContent => {
+                        let lastY, lastX, text = '';
+                        const items = textContent.items.sort((a, b) => {
+                            if (Math.abs(a.transform[5] - b.transform[5]) < 1.0) return a.transform[4] - b.transform[4];
+                            return b.transform[5] - a.transform[5];
+                        });
+                        for (let item of items) {
+                            const currentY = item.transform[5];
+                            const currentX = item.transform[4];
+                            if (lastY !== undefined && Math.abs(currentY - lastY) < 1.0) {
+                                const deltaX = currentX - lastX;
+                                if (deltaX > 2) text += ' '.repeat(Math.max(1, Math.floor(deltaX / 4)));
+                                text += item.str;
+                            } else {
+                                if (text !== '') text += '\n';
+                                if (currentX > 50) text += ' '.repeat(Math.floor(currentX / 4));
+                                text += item.str;
+                            }
+                            lastY = currentY;
+                            lastX = currentX + (item.width || item.str.length * 6);
+                        }
+                        return text;
+                    });
+                }
+            };
+
+            const data = await pdfParse(buffer, options);
+            const lines = data.text.split('\n');
+            
+            lines.slice(0, 300).forEach((line, i) => {
+                const upper = line.toUpperCase();
+                // Mostra intestazioni e righe con cifre decimali
+                if (upper.includes('DARE') || upper.includes('AVERE') || upper.includes('USCITE') || upper.includes('ENTRATE') || /\d,\d{2}/.test(line)) {
+                    let ruler1 = "";
+                    let ruler2 = "";
+                    for(let j=0; j<line.length; j++) {
+                        if (j % 10 === 0) ruler1 += (Math.floor(j/10)).toString().padEnd(10);
+                        ruler2 += (j % 10).toString();
+                    }
+                    console.log(`[L-${i.toString().padStart(3, '0')}] ${ruler1}`);
+                    console.log(`[L-${i.toString().padStart(3, '0')}] ${ruler2}`);
+                    console.log(`[L-${i.toString().padStart(3, '0')}] ${line}`);
+                    console.log("-".repeat(Math.max(80, line.length + 8)));
+                }
+            });
+        } catch (e) {
+            console.error(`Error parsing ${file}: ${e.message}`);
+        }
+    }
+}
+
+debugRaw().catch(console.error);

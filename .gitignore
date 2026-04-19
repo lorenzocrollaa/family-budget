@@ -1,0 +1,38 @@
+node_modules
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Database
+prisma/dev.db
+prisma/dev.db-journal
+
+# Uploads (user data, non va nel repo)
+uploads/
+
+# Prisma generated
+/generated/prisma
+
+# Debug e script temporanei
+debug_*.js
+repro_*.js
+tmp-test*.js
+test_files/
+check_vision_cache.js
+cleanup_*.js
+clear_cache.js
+convert_memory.js
+dedup.js
+find_emojis.js
+rebuild.js
+replace_*.js
+verify_*.js
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store

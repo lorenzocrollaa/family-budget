@@ -1,0 +1,1034 @@
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Family Budget Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style_v4.css?v=2026041905">
+    <style id="nuclear-layout-lock">
+        /* ☢️ NUCLEAR LAYOUT LOCK - CANNOT BE CACHED ☢️ */
+        .balance-card { margin-bottom: 20px !important; width: 100% !important; }
+        .tab-content { padding-top: 0 !important; margin-top: 0 !important; }
+        .tab-content > div:first-child, .tab-content > .card:first-child { margin-top: 0 !important; padding-top: 0 !important; }
+    </style>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <!-- Premium Background Decorators (behind the phone) -->
+    <div class="bg-glow-container">
+        <div class="glow-blob blob-1"></div>
+        <div class="glow-blob blob-2"></div>
+        <div class="glow-blob blob-3"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         PHONE SHELL — wraps auth + app
+    ═══════════════════════════════════════════ -->
+    <div id="phoneShell">
+        <div class="phone-dynamic-island"></div>
+        <div class="phone-btn phone-vol-up"></div>
+        <div class="phone-btn phone-vol-down"></div>
+        <div class="phone-btn phone-power"></div>
+        <div class="phone-screen-inner">
+
+        <!-- iOS-style status bar -->
+        <div class="phone-status-bar" id="phoneStatusBar">
+            <div class="psb-time" id="psbTime">9:41</div>
+            <div class="psb-icons">
+                <!-- Signal bars -->
+                <svg class="psb-icon" viewBox="0 0 17 12" fill="currentColor">
+                    <rect x="0"  y="8"  width="3" height="4" rx="0.5"/>
+                    <rect x="4.5" y="5.5" width="3" height="6.5" rx="0.5"/>
+                    <rect x="9"  y="3"  width="3" height="9" rx="0.5"/>
+                    <rect x="13.5" y="0" width="3" height="12" rx="0.5" opacity="0.35"/>
+                </svg>
+                <!-- WiFi -->
+                <svg class="psb-icon" viewBox="0 0 16 12" fill="none" stroke="currentColor" stroke-linecap="round">
+                    <path d="M1 4.5 Q8 -1.5 15 4.5" stroke-width="1.5" opacity="0.35"/>
+                    <path d="M3.2 7 Q8 3 12.8 7" stroke-width="1.5"/>
+                    <path d="M5.5 9.5 Q8 7.5 10.5 9.5" stroke-width="1.5"/>
+                    <circle cx="8" cy="11.5" r="1" fill="currentColor" stroke="none"/>
+                </svg>
+                <!-- Battery -->
+                <svg class="psb-icon psb-battery" viewBox="0 0 25 12" fill="currentColor">
+                    <rect x="0.5" y="0.5" width="21" height="11" rx="2.5" stroke="currentColor" stroke-width="1" fill="none"/>
+                    <rect x="22" y="3.5" width="2.5" height="5" rx="1"/>
+                    <rect x="2" y="2" width="16" height="8" rx="1.5" opacity="0.9"/>
+                </svg>
+            </div>
+        </div>
+
+    <!-- Schermata di Autenticazione -->
+    <div id="authScreen">
+        <canvas id="authCanvas"></canvas>
+        <div class="auth-neb n1"></div>
+        <div class="auth-neb n2"></div>
+        <div class="auth-neb n3"></div>
+        <div class="auth-neb n4"></div>
+        <div class="auth-neb n5"></div>
+
+        <!-- Floating background cards -->
+        <div class="auth-bc" style="top:3%;left:-6%;width:200px;--r:rotate(-7deg);animation:af0 7s ease-in-out infinite;">
+            <div class="auth-bc-lbl"><i data-lucide="wallet"></i> Saldo</div>
+            <div class="auth-bc-val">€ 12.480,50</div>
+            <div class="auth-bc-pill" style="background:rgba(5,150,105,0.15);color:#22c55e;">↑ +€ 320</div>
+        </div>
+        <div class="auth-bc" style="top:6%;right:-4%;width:150px;--r:rotate(9deg);animation:af1 8s ease-in-out infinite;animation-delay:-2s;">
+            <div class="auth-bc-lbl">🛒 Alimentari</div>
+            <div class="auth-bc-val" style="color:#2dd4bf;">€ 320</div>
+            <div class="auth-bar"><div class="auth-bar-fill" style="width:91%;background:#2dd4bf;"></div></div>
+            <div style="font-size:9px;color:#475569;margin-top:3px;">budget €350</div>
+        </div>
+        <div class="auth-bc" style="top:18%;left:50%;margin-left:-77px;width:155px;--r:rotate(-4deg);animation:af2 9s ease-in-out infinite;animation-delay:-1s;">
+            <div class="auth-bc-lbl"><i data-lucide="bot"></i> AI Attiva</div>
+            <div class="auth-bc-val">142</div>
+            <div style="font-size:9px;color:#475569;margin-top:2px;">transazioni auto</div>
+            <div class="auth-bc-pill" style="background:rgba(99,102,241,0.15);color:#818cf8;">98% accurato</div>
+        </div>
+        <div class="auth-bc" style="top:32%;left:-8%;width:148px;--r:rotate(6deg);animation:af3 7.5s ease-in-out infinite;animation-delay:-3s;">
+            <div class="auth-bc-lbl">💰 Stipendio</div>
+            <div class="auth-bc-val" style="color:#22c55e;">€ 2.800</div>
+            <div class="auth-bc-pill" style="background:rgba(34,197,94,0.15);color:#22c55e;">Aprile 2026</div>
+        </div>
+        <div class="auth-bc" style="top:30%;right:-6%;width:145px;--r:rotate(-8deg);animation:af4 8.5s ease-in-out infinite;animation-delay:-4s;">
+            <div class="auth-bc-lbl">⚡ Bollette</div>
+            <div class="auth-bc-val" style="color:#fbbf24;">€ 145</div>
+            <div class="auth-bar"><div class="auth-bar-fill" style="width:68%;background:#fbbf24;"></div></div>
+        </div>
+        <div class="auth-bc" style="bottom:28%;left:-4%;width:160px;--r:rotate(5deg);animation:af5 9.5s ease-in-out infinite;animation-delay:-1.5s;">
+            <div class="auth-bc-lbl"><i data-lucide="plane"></i> Parigi 🗼</div>
+            <div class="auth-bc-val">€ 183</div>
+            <div class="auth-bar"><div class="auth-bar-fill" style="width:23%;background:#0ea5e9;"></div></div>
+            <div style="font-size:9px;color:#475569;margin-top:3px;">budget €800</div>
+        </div>
+        <div class="auth-bc" style="bottom:30%;right:-5%;width:148px;--r:rotate(-6deg);animation:af6 8s ease-in-out infinite;animation-delay:-2.5s;">
+            <div class="auth-bc-lbl">🍽️ Ristoranti</div>
+            <div class="auth-bc-val" style="color:#fb7185;">€ 54</div>
+            <div class="auth-bc-pill" style="background:rgba(251,113,133,0.12);color:#fb7185;">Aprile</div>
+        </div>
+        <div class="auth-bc" style="bottom:10%;left:-5%;width:170px;--r:rotate(8deg);animation:af7 10s ease-in-out infinite;animation-delay:-3.5s;">
+            <div class="auth-bc-lbl"><i data-lucide="pie-chart"></i> Categorie</div>
+            <div style="display:flex;gap:6px;margin-top:4px;">
+                <div style="text-align:center;"><div style="font-size:15px;">🛍️</div><div style="font-size:9px;color:#e879f9;font-weight:700;">€124</div></div>
+                <div style="text-align:center;"><div style="font-size:15px;">🎬</div><div style="font-size:9px;color:#38bdf8;font-weight:700;">€18</div></div>
+                <div style="text-align:center;"><div style="font-size:15px;">🏠</div><div style="font-size:9px;color:#a78bfa;font-weight:700;">€0</div></div>
+                <div style="text-align:center;"><div style="font-size:15px;">💊</div><div style="font-size:9px;color:#fbbf24;font-weight:700;">€32</div></div>
+            </div>
+        </div>
+        <div class="auth-bc" style="bottom:8%;right:-6%;width:148px;--r:rotate(-9deg);animation:af8 7s ease-in-out infinite;animation-delay:-0.5s;">
+            <div class="auth-bc-lbl">🚗 Trasporti</div>
+            <div class="auth-bc-val" style="color:#60a5fa;">€ 62</div>
+            <div class="auth-bar"><div class="auth-bar-fill" style="width:42%;background:#60a5fa;"></div></div>
+        </div>
+        <div class="auth-bc" style="top:1%;right:25%;width:130px;--r:rotate(3deg);animation:af9 11s ease-in-out infinite;animation-delay:-5s;">
+            <div class="auth-bc-lbl">🛍️ Shopping</div>
+            <div class="auth-bc-val" style="color:#e879f9;">€ 124</div>
+        </div>
+
+        <!-- Vignette -->
+        <div class="auth-overlay"></div>
+
+        <!-- Login card -->
+        <div class="auth-login-wrap">
+            <div class="auth-login-card">
+                <div class="auth-brand">
+                    <div class="auth-brand-name">Family Budget</div>
+                    <div class="auth-brand-sub">Il tuo budget di famiglia, sempre sotto controllo.</div>
+                </div>
+
+                <div class="auth-tabs">
+                    <button class="auth-tab-btn on" id="tabLoginBtn" onclick="switchAuthTab('login')">Accedi</button>
+                    <button class="auth-tab-btn" id="tabRegisterBtn" onclick="switchAuthTab('register')">Registrati</button>
+                </div>
+
+                <div id="authLoginForm" class="auth-form-wrap">
+                    <div class="auth-field">
+                        <div class="auth-flbl"><i data-lucide="mail"></i> Email</div>
+                        <input class="auth-finp" type="email" id="loginEmail" placeholder="famiglia.rossi@email.com">
+                    </div>
+                    <div class="auth-field">
+                        <div class="auth-flbl"><i data-lucide="lock"></i> Password</div>
+                        <input class="auth-finp" type="password" id="loginPassword" placeholder="La tua password">
+                    </div>
+                    <button class="auth-btn-sub" onclick="handleLogin()">
+                        <span style="display:flex;align-items:center;gap:7px;">Accedi <i data-lucide="arrow-right" style="width:15px;height:15px;"></i></span>
+                    </button>
+                </div>
+
+                <div id="authRegisterForm" class="auth-form-wrap" style="display:none;">
+                    <div class="auth-field">
+                        <div class="auth-flbl"><i data-lucide="users"></i> Nome Famiglia</div>
+                        <input class="auth-finp" type="text" id="registerName" placeholder="Famiglia Rossi">
+                    </div>
+                    <div class="auth-field">
+                        <div class="auth-flbl"><i data-lucide="mail"></i> Email</div>
+                        <input class="auth-finp" type="email" id="registerEmail" placeholder="famiglia.rossi@email.com">
+                    </div>
+                    <div class="auth-field">
+                        <div class="auth-flbl"><i data-lucide="lock"></i> Password</div>
+                        <input class="auth-finp" type="password" id="registerPassword" placeholder="Scegli una password sicura">
+                    </div>
+                    <button class="auth-btn-sub auth-btn-reg" onclick="handleRegister()">
+                        <span style="display:flex;align-items:center;gap:7px;">Crea Profilo <i data-lucide="user-plus" style="width:15px;height:15px;"></i></span>
+                    </button>
+                </div>
+
+                <div class="auth-fnote">Dati crittografati · Nessuna condivisione con terze parti</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP - Nascosta finché non si accede -->
+    <div id="appContainer" style="display: none;">
+        <!-- CONTENITORE MAESTRO (1000px Fixed Column) -->
+        <div id="layout-master" style="max-width: 1000px !important; margin: 0 auto !important; width: 100%; position: relative;">
+            <!-- APP PRINCIPALE -->
+
+    <!-- Interfaccia App -->
+    <div class="app-interface" style="width: 100%; padding: 0 !important; box-sizing: border-box !important;">
+        <!-- Card Bilancio -->
+        <div class="balance-card wallet-card" id="balanceCard">
+            <!-- Aurora blobs -->
+            <div class="bal-aurora bal-a1"></div>
+            <div class="bal-aurora bal-a2"></div>
+            <!-- Shimmer sweep -->
+            <div class="bal-shimmer"></div>
+
+            <!-- Pig playground: hidden temporarily -->
+            <div id="pigPlayground" style="display:none">
+            <div class="bal-pig-wrap" id="balPigWrap" onclick="pigTap()" title="Tap me!">
+                    <svg class="bal-pig-svg" id="balPig" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <!-- 3D sphere: light from top-left → gives ceramic glossy illusion -->
+                            <radialGradient id="pgb" cx="32%" cy="26%" r="68%">
+                                <stop offset="0%"   stop-color="#fce7f3"/>
+                                <stop offset="28%"  stop-color="#f9a8d4"/>
+                                <stop offset="65%"  stop-color="#ec4899"/>
+                                <stop offset="100%" stop-color="#881337"/>
+                            </radialGradient>
+                            <!-- Snout (slightly lighter, own light source) -->
+                            <radialGradient id="pgs" cx="38%" cy="34%" r="65%">
+                                <stop offset="0%"   stop-color="#fecdd3"/>
+                                <stop offset="60%"  stop-color="#fb7185"/>
+                                <stop offset="100%" stop-color="#e11d48"/>
+                            </radialGradient>
+                            <!-- Legs -->
+                            <radialGradient id="pgl" cx="38%" cy="28%" r="65%">
+                                <stop offset="0%"   stop-color="#fbcfe8"/>
+                                <stop offset="100%" stop-color="#db2777"/>
+                            </radialGradient>
+                            <!-- Gold coin rim -->
+                            <linearGradient id="pgg" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%"   stop-color="#fef08a"/>
+                                <stop offset="100%" stop-color="#a16207"/>
+                            </linearGradient>
+                            <!-- Body drop shadow -->
+                            <filter id="pgsf" x="-30%" y="-30%" width="160%" height="180%">
+                                <feDropShadow dx="1.5" dy="3" stdDeviation="3" flood-color="#9d174d" flood-opacity="0.5"/>
+                            </filter>
+                            <!-- Snout subtle shadow -->
+                            <filter id="pssf" x="-25%" y="-25%" width="150%" height="150%">
+                                <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#be185d" flood-opacity="0.35"/>
+                            </filter>
+                        </defs>
+
+                        <!-- Ground shadow -->
+                        <ellipse cx="40" cy="77" rx="17" ry="3" fill="rgba(0,0,0,0.14)" class="pig-shadow"/>
+
+                        <!-- Back legs (drawn before body so body occludes their tops) -->
+                        <rect x="28" y="64" width="9" height="13" rx="4.5" fill="url(#pgl)"/>
+                        <rect x="43" y="64" width="9" height="13" rx="4.5" fill="url(#pgl)"/>
+
+                        <!-- Curly tail (right) -->
+                        <path d="M64 44 Q72 38 70 47 Q68 53 64 50" stroke="#f472b6" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+
+                        <!-- Left ear — small, tight to head -->
+                        <ellipse class="pig-ear-l" cx="21" cy="22" rx="5.5" ry="6.5" fill="url(#pgb)" transform="rotate(-18 21 22)"/>
+                        <ellipse cx="21" cy="22.5" rx="2.8" ry="3.5" fill="#fecdd3" transform="rotate(-18 21 22.5)" opacity="0.85"/>
+
+                        <!-- Right ear — small, tight to head -->
+                        <ellipse class="pig-ear-r" cx="59" cy="22" rx="5.5" ry="6.5" fill="url(#pgb)" transform="rotate(18 59 22)"/>
+                        <ellipse cx="59" cy="22.5" rx="2.8" ry="3.5" fill="#fecdd3" transform="rotate(18 59 22.5)" opacity="0.85"/>
+
+                        <!-- ★ Main body — perfect circle for ceramic sphere look ★ -->
+                        <circle cx="40" cy="43" r="27" fill="url(#pgb)" filter="url(#pgsf)"/>
+
+                        <!-- Primary gloss highlight (large, diffuse) -->
+                        <ellipse cx="28" cy="31" rx="11" ry="7" fill="white" opacity="0.30" transform="rotate(-22 28 31)"/>
+                        <!-- Secondary specular highlight (small, crisp) -->
+                        <ellipse cx="23" cy="28" rx="3.5" ry="2" fill="white" opacity="0.50" transform="rotate(-18 23 28)"/>
+
+                        <!-- Gold coin slot on top of head -->
+                        <rect x="31" y="16" width="18" height="4.5" rx="2.2" fill="url(#pgg)"/>
+                        <rect x="32.5" y="17.2" width="15" height="2" rx="1" fill="#0a0a0a" opacity="0.93"/>
+
+                        <!-- Eyes (small bead eyes) -->
+                        <circle cx="32" cy="41" r="3.8" fill="#111"/>
+                        <circle cx="30.6" cy="39.6" r="1.4" fill="white" opacity="0.9"/>
+                        <circle cx="48" cy="41" r="3.8" fill="#111"/>
+                        <circle cx="46.6" cy="39.6" r="1.4" fill="white" opacity="0.9"/>
+
+                        <!-- Happy squint arcs (hidden) -->
+                        <path class="pig-happy-eyes" d="M28 40 Q32 35.5 36 40" stroke="#111" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0"/>
+                        <path class="pig-happy-eyes" d="M44 40 Q48 35.5 52 40" stroke="#111" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0"/>
+
+                        <!-- Snout — protrudes slightly (drawn after body) -->
+                        <ellipse cx="40" cy="51" rx="10.5" ry="8" fill="url(#pgs)" filter="url(#pssf)"/>
+                        <!-- Snout gloss -->
+                        <ellipse cx="36.5" cy="49" rx="3.5" ry="2" fill="white" opacity="0.22" transform="rotate(-12 36.5 49)"/>
+                        <!-- Nostrils -->
+                        <circle cx="36.5" cy="52" r="2" fill="#9f1239" opacity="0.5"/>
+                        <circle cx="43.5" cy="52" r="2" fill="#9f1239" opacity="0.5"/>
+
+                        <!-- Mouth neutral -->
+                        <path class="pig-mouth-neutral" d="M34 59 Q40 62.5 46 59" stroke="#be185d" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+                        <!-- Mouth happy -->
+                        <path class="pig-mouth-happy"   d="M32 58 Q40 65.5 48 58" stroke="#9d174d" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0"/>
+                        <!-- Mouth sad -->
+                        <path class="pig-mouth-sad"     d="M33 62 Q40 56 47 62"   stroke="#9d174d" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0"/>
+
+                        <!-- Tear (sad) -->
+                        <ellipse class="pig-tear" cx="53" cy="47" rx="2" ry="3" fill="#93c5fd" opacity="0"/>
+
+                        <!-- Front legs (in front of body) -->
+                        <rect x="20" y="64" width="9" height="13" rx="4.5" fill="url(#pgl)"/>
+                        <rect x="51" y="64" width="9" height="13" rx="4.5" fill="url(#pgl)"/>
+
+                        <!-- Sparkles (happy) -->
+                        <g class="pig-sparkles" opacity="0">
+                            <text x="3"  y="18" font-size="9">✦</text>
+                            <text x="64" y="14" font-size="7">✦</text>
+                            <text x="61" y="28" font-size="6">✦</text>
+                        </g>
+
+                        <!-- Coin ejected from slot (happy) -->
+                        <g class="pig-coin" opacity="0">
+                            <circle cx="40" cy="7" r="7" fill="#fbbf24"/>
+                            <circle cx="40" cy="7" r="5.5" fill="#f59e0b"/>
+                            <text x="36.2" y="11" font-size="8" fill="#78350f" font-weight="bold">€</text>
+                        </g>
+                    </svg>
+            </div>
+            </div><!-- end pigPlayground -->
+
+            <!-- Text layer: always above pig (z-index 3) -->
+            <div class="bal-content">
+                <div class="bal-label">Saldo Famiglia Totale</div>
+                <div class="balance-amount" id="totalBalance">€ 0,00</div>
+                <div class="wallet-footer" id="balanceChange">Carica i tuoi dati per iniziare</div>
+            </div>
+        </div>
+
+        <!-- HOME TAB -->
+        <div id="homeTab" class="tab-content active">
+            <!-- Filtro Date -->
+            <div class="date-filter-bar" id="dateFilter">
+                <i data-lucide="calendar" class="dfb-icon"></i>
+                <div class="dfb-group">
+                    <label class="dfb-lbl">Da</label>
+                    <input type="date" id="dateFrom" class="dfb-input">
+                </div>
+                <div class="dfb-group">
+                    <label class="dfb-lbl">A</label>
+                    <input type="date" id="dateTo" class="dfb-input">
+                </div>
+                <button class="dfb-apply" onclick="applyDateFilter()">Applica</button>
+                <button class="dfb-clear" onclick="clearDateFilter()" title="Azzera"><i data-lucide="x" style="width:12px;height:12px;"></i></button>
+            </div>
+            
+            <!-- Statistiche -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper success-bg"><i data-lucide="arrow-up-right"></i></div>
+                    <div class="stat-value income" id="totalIncomeDisplay">€ 0.00</div>
+                    <div class="stat-label">Entrate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper danger-bg"><i data-lucide="arrow-down-right"></i></div>
+                    <div class="stat-value expense" id="totalExpensesDisplay">€ 0.00</div>
+                    <div class="stat-label">Spese</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper info-bg"><i data-lucide="activity"></i></div>
+                    <div class="stat-value" id="totalTransactionsDisplay">0</div>
+                    <div class="stat-label">Transazioni</div>
+                </div>
+            </div>
+
+            <!-- Mini Insights (Pie + Top Categories) -->
+            <div class="mini-insights-card">
+                <div class="mic-header">
+                    <span class="mic-title"><i data-lucide="bar-chart-2" style="width:13px;height:13px;"></i> Analisi Rapida</span>
+                </div>
+                <div class="mic-body">
+                    <div class="mic-pie-wrap" onclick="switchTab('categories')" title="Vai alle Categorie" style="cursor:pointer;">
+                        <canvas id="miniPieChart" width="72" height="72"></canvas>
+                        <div id="miniPieEmpty" class="mic-pie-empty" style="display:none;">
+                            <i data-lucide="pie-chart" style="width:22px;height:22px;opacity:0.25;"></i>
+                        </div>
+                        <div class="mic-pie-hint">categorie</div>
+                    </div>
+                    <div class="mic-bars" id="miniBarList" onclick="switchTab('analysis')" title="Vai ad Analisi" style="cursor:pointer;">
+                        <div class="mic-bar-empty">Nessun dato</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transazioni Recenti -->
+            <div class="transactions-container">
+                <div class="an-header">
+                    <div class="an-title">
+                        <i data-lucide="list" style="width:15px;height:15px;color:var(--accent-primary);"></i>
+                        <span id="transactionsTitle">Ultime Transazioni</span>
+                    </div>
+                    <button id="exitFileViewBtn" onclick="exitFileView()" class="an-action-btn" style="display:none;">
+                        <i data-lucide="landmark" style="width:13px;height:13px;"></i> Torna al Budget Reale
+                    </button>
+                </div>
+                <div id="recentTransactions" class="transactions-list">
+                    <div class="tab-empty-state" style="background:var(--bg-card);border-radius:var(--radius-lg);border:1px dashed var(--border-glass-light);">
+                        <i data-lucide="layout-list" class="tab-empty-icon"></i>
+                        <div class="tab-empty-title">Nessuna transazione ancora</div>
+                        <div class="tab-empty-sub">Carica un estratto conto per vedere i tuoi dati</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- UPLOAD TAB -->
+        <div id="uploadTab" class="tab-content">
+            <div class="upload-tab-inner">
+                <div class="an-header">
+                    <div class="an-title">
+                        <i data-lucide="upload-cloud" style="width:15px;height:15px;color:var(--accent-primary);"></i>
+                        Carica Estratto Conto
+                    </div>
+                </div>
+
+                <div class="upload-area" id="dropzone" onclick="selectFile()" style="min-height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                    <div class="upload-icon" style="margin-bottom: 12px; background: rgba(79,172,254,0.1); padding: 14px; border-radius: 50%;"><i data-lucide="cloud-upload" style="width: 36px; height: 36px; color: var(--accent-primary);"></i></div>
+                    <div style="font-size: 14px; font-weight: 700;">Trascina qui o Clicca</div>
+                    <div style="margin-top: 6px; color: var(--text-muted); font-size: 11px;">Carica il tuo estratto conto in formato PDF</div>
+                    <input type="file" id="fileInput" accept=".pdf,.csv,.txt,.json,.qif,.ofx,.qfx,.mt940,.sta,.xlsx,.xls" multiple style="display: none;">
+                </div>
+
+                <input type="checkbox" id="uploadAsMemory" style="display:none;">
+
+                <!-- Loading Spinner & Progress (Nascosti di default) -->
+                <div id="uploadSkeleton" class="skeleton-container" style="display: none; min-height: 250px; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.2); border-radius: 16px; border: 1px dashed var(--border-glass-light);">
+                    <div class="spinner-wheel" style="margin-bottom: 20px;"></div>
+                    <div style="font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 10px;">Elaborazione In Corso...</div>
+                    <div style="color: var(--text-muted); font-size: 14px; max-width: 300px;" id="skeletonText">L'AI sta analizzando i tuoi movimenti bancari, assegnando categorie intelligenti. Attendi qualche istante.</div>
+                    
+                    <div style="width: 80%; background: rgba(255,255,255,0.1); height: 6px; border-radius: 10px; margin-top: 25px; overflow: hidden; position: relative;">
+                        <div class="progress-bar-fill"></div>
+                    </div>
+                </div>
+
+                <div id="uploadedFiles" style="margin-top: 20px; text-align: left;"></div>
+            </div>
+        </div>
+
+        <!-- CATEGORIES TAB -->
+        <div id="categoriesTab" class="tab-content">
+
+            <!-- ── Compact Header ── -->
+            <div class="an-header">
+                <div class="an-title">
+                    <i data-lucide="pie-chart" style="width:15px;height:15px;color:var(--accent-primary);"></i>
+                    Categorie
+                </div>
+                <div id="pieCenterAmount" class="cat-total-pill">€ 0,00</div>
+            </div>
+
+            <!-- ── Donut Chart ── -->
+            <div class="card an-chart-card cat-pie-card">
+                <div id="emptyChart" class="tab-empty-state">
+                    <i data-lucide="trending-up" class="tab-empty-icon"></i>
+                    <div class="tab-empty-title">Nessuna categoria ancora</div>
+                    <div class="tab-empty-sub">Carica transazioni per vedere categorie AI</div>
+                </div>
+                <div class="cat-pie-wrap" id="pieCenterInfo" style="display:none;">
+                    <canvas id="pieChart" width="200" height="200" style="cursor:pointer;"></canvas>
+                    <div class="cat-pie-center">
+                        <div id="pieCenterAmountInner" style="font-size:16px;font-weight:800;font-family:'Outfit',sans-serif;color:var(--text-main);">€ 0</div>
+                        <div style="font-size:9px;opacity:0.45;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-top:2px;">Totale</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Categories Grid ── -->
+            <div id="categoriesGrid"></div>
+
+        </div>
+
+        <!-- TRAVEL TAB -->
+        <div id="travelTab" class="tab-content">
+            <div class="an-header">
+                <div class="an-title">
+                    <i data-lucide="plane" style="width:15px;height:15px;color:var(--accent-primary);"></i>
+                    Gestione Viaggi
+                </div>
+                <button onclick="showTravelModal()" class="an-action-btn">+ Nuovo Viaggio</button>
+            </div>
+            <div class="card">
+                <div id="travelsList">
+                    <div class="tab-empty-state">
+                        <i data-lucide="plane" class="tab-empty-icon"></i>
+                        <div class="tab-empty-title">Nessun viaggio ancora</div>
+                        <div class="tab-empty-sub">Crea il tuo primo viaggio per raggruppare le spese</div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+
+        <!-- 🆕 DATABASE ADMIN TAB -->
+        <div id="databaseTab" class="tab-content">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h3><i data-lucide="database"></i> Gestione Database Completo</h3>
+                        <div id="dbStats" style="font-size: 14px; opacity: 0.8; margin-top: 5px;">
+                            Caricamento statistiche...
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="refreshAuthToken()" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                            <i data-lucide="key"></i> Refresh Token
+                        </button>
+                        <button onclick="reloadAllTransactions()" style="background: linear-gradient(45deg, #4facfe, #00f2fe); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                            <i data-lucide="refresh-cw"></i> Ricarica
+                        </button>
+                        <button onclick="resetDatabase()" style="background: linear-gradient(45deg, #f87171, #ef4444); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                            <i data-lucide="trash-2"></i> Reset DB
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(79, 172, 254, 0.1); border: 1px solid #4facfe; border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                    <h4 style="color: #4facfe; margin-bottom: 10px;">ℹ️ Info Sezione Admin</h4>
+                    <div style="font-size: 14px; opacity: 0.9;">
+                        Qui puoi vedere e modificare <strong>TUTTE</strong> le transazioni nel database.<br>
+                        Correggendo le categorie, alleni l'AI per migliorare le future categorizzazioni.
+                    </div>
+                </div>
+
+                <!-- 🆕 Google Places API Stats Widget -->
+                <div id="googlePlacesStats" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border: 1px solid #667eea; border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="color: #667eea; margin: 0; display:flex; align-items:center; gap:8px;"><i data-lucide="globe"></i> Google Places API</h4>
+                        <button onclick="loadGooglePlacesStats()" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; color: #667eea; font-weight: 600;">
+                            <i data-lucide="refresh-cw"></i> Aggiorna
+                        </button>
+                    </div>
+                    <div id="googlePlacesStatsContent" style="font-size: 13px;">
+                        Caricamento statistiche API...
+                    </div>
+                </div>
+
+                <!-- Filtri Admin -->
+                <div id="adminFiltersSection" style="background: rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 10px;">
+                        <input type="text" id="adminSearchText" placeholder="Cerca per descrizione..." class="filter-input" style="color: var(--text-main) !important;">
+                        
+                        <select id="adminFilterCategory" class="filter-input" style="color: var(--text-main) !important;">
+                            <option value="">Tutte le categorie</option>
+                        </select>
+                        
+                        <select id="adminFilterVerified" class="filter-input" style="color: var(--text-main) !important;">
+                            <option value="">Tutte</option>
+                            <option value="verified">✓ Solo Verificate</option>
+                            <option value="unverified">⚠ Da Verificare</option>
+                        </select>
+                    </div>
+                    <button onclick="applyAdminFilters()" class="filter-btn" style="width: 100%;">Applica Filtri</button>
+                </div>
+
+                <!-- Lista Transazioni Database -->
+                <div id="adminTransactionsList">
+                    <div class="loading-initial" style="text-align: center; opacity: 0.6; padding: 40px 20px;">
+                        <i data-lucide="database" style="width: 48px; height: 48px; margin-bottom: 15px; color: #a78bfa;"></i>
+                        <div>Clicca su "Ricarica" o applica i filtri per vedere le transazioni</div>
+                        <div style="font-size: 14px; margin-top: 8px;">Il database viene caricato solo quando necessario</div>
+                    </div>
+                </div>
+
+                <!-- Paginazione -->
+                <div id="adminPagination" style="display: none; justify-content: center; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+                    <button onclick="changePage(-1)" class="btn btn-neutral" style="padding: 10px 20px; border-radius: 8px;">◀ Precedente</button>
+                    <div id="adminPageInfo" style="display: flex; align-items: center; color: var(--text-main); font-weight: bold;"></div>
+                    <button onclick="changePage(1)" class="btn btn-neutral" style="padding: 10px 20px; border-radius: 8px;">Successiva ▶</button>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <!-- ANALYSIS TAB -->
+        <div id="analysisTab" class="tab-content">
+
+            <!-- ── Compact Header Row — always visible ── -->
+            <div class="an-header">
+                <div class="an-title">
+                    <i data-lucide="bar-chart-2" style="width:15px;height:15px;color:var(--accent-primary);"></i>
+                    Analisi
+                </div>
+                <div class="an-nav" id="analysisNavControls">
+                    <button onclick="analysisNavMonth(-1)" class="an-nav-btn"><i data-lucide="chevron-left" style="width:15px;height:15px;"></i></button>
+                    <div id="analysisMonthLabel" class="an-month-lbl">—</div>
+                    <button onclick="analysisNavMonth(+1)" class="an-nav-btn"><i data-lucide="chevron-right" style="width:15px;height:15px;"></i></button>
+                </div>
+            </div>
+
+            <div id="analysisContent">
+
+                <!-- ── KPI Strip ── -->
+                <div class="an-kpi-strip">
+                    <div class="an-kpi an-kpi-income">
+                        <div class="an-kpi-lbl"><i data-lucide="arrow-down-circle" style="width:11px;height:11px;"></i> Entrate</div>
+                        <div id="analysisIncome" class="an-kpi-val" style="color:var(--accent-success);">€ 0</div>
+                    </div>
+                    <div class="an-kpi-div"></div>
+                    <div class="an-kpi an-kpi-expenses">
+                        <div class="an-kpi-lbl"><i data-lucide="arrow-up-circle" style="width:11px;height:11px;"></i> Uscite</div>
+                        <div id="analysisExpenses" class="an-kpi-val" style="color:#f43f5e;">€ 0</div>
+                    </div>
+                    <div class="an-kpi-div"></div>
+                    <div class="an-kpi an-kpi-balance">
+                        <div class="an-kpi-lbl"><i data-lucide="wallet" style="width:11px;height:11px;"></i> Saldo</div>
+                        <div id="analysisBalance" class="an-kpi-val" style="color:#60a5fa;">€ 0</div>
+                    </div>
+                </div>
+
+                <!-- ── Overview Chart ── -->
+                <div class="card an-chart-card">
+                    <div class="an-chart-lbl"><i data-lucide="trending-up" style="width:12px;height:12px;"></i> Entrate / Uscite per mese</div>
+                    <div style="position:relative;height:140px;"><canvas id="analysisOverviewChart"></canvas></div>
+                </div>
+
+                <!-- ── Category Breakdown Chart ── -->
+                <div class="card an-chart-card">
+                    <div class="an-chart-lbl"><i data-lucide="bar-chart-2" style="width:12px;height:12px;"></i> Categorie — <span id="analysisCategoryMonthLabel">—</span></div>
+                    <div style="position:relative;height:240px;"><canvas id="analysisCategoryChart"></canvas></div>
+                </div>
+
+            </div>
+
+            <!-- Empty state -->
+            <div id="analysisEmptyState" style="display:none;">
+                <div class="card">
+                    <div class="tab-empty-state">
+                        <i data-lucide="activity" class="tab-empty-icon"></i>
+                        <div class="tab-empty-title">Nessun dato disponibile</div>
+                        <div class="tab-empty-sub">Carica transazioni o collega un conto</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- BANK TAB -->
+        <div id="bankTab" class="tab-content">
+            <div class="an-header">
+                <div class="an-title">
+                    <i data-lucide="landmark" style="width:15px;height:15px;color:var(--accent-primary);"></i>
+                    Conti Collegati
+                </div>
+                <button onclick="showBankSelector()" class="an-action-btn">+ Connetti Banca</button>
+            </div>
+            <div class="card" style="margin-top: 0 !important;">
+                <div id="bankAccountsList">
+                    <div class="tab-empty-state">
+                        <i data-lucide="landmark" class="tab-empty-icon"></i>
+                        <div class="tab-empty-title">Nessuna banca collegata</div>
+                        <div class="tab-empty-sub">Collega i tuoi conti per sincronizzare le spese in tempo reale</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- TABS NAVIGATION (moved to phone-screen-inner) -->
+
+        <!-- MODALS (Moved outside of tab contents to fix stacking context issues) -->
+        
+        <!-- Category Modal -->
+        <div id="categoryModal" class="modal">
+            <div class="modal-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 id="modalCategoryTitle">Categoria</h3>
+                    <button onclick="closeCategoryModal()" style="background: none; border: none; color: #f87171; font-size: 24px; cursor: pointer;">×</button>
+                </div>
+                
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 24px; font-weight: bold; color: #f87171;" id="modalCategoryAmount">€ 0.00</div>
+                    <div style="opacity: 0.8;">Speso nel periodo</div>
+                </div>
+                
+                <div id="categoryTransactions"></div>
+            </div>
+        </div>
+
+        <!-- Travel Modal -->
+        <div id="travelModal" class="modal">
+            <div class="modal-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3><i data-lucide="plane"></i> Nuovo Viaggio</h3>
+                    <button onclick="closeTravelModal()" style="background: none; border: none; color: #f87171; font-size: 24px; cursor: pointer;">×</button>
+                </div>
+                
+                <div class="form-group">
+                    <label><i data-lucide="map-pin"></i> Destinazione</label>
+                    <input type="text" id="travelDestination" placeholder="es. Parigi, Londra...">
+                </div>
+                <div class="form-group">
+                    <label><i data-lucide="calendar"></i> Data Inizio</label>
+                    <input type="date" id="travelStartDate">
+                </div>
+                <div class="form-group">
+                    <label><i data-lucide="calendar"></i> Data Fine</label>
+                    <input type="date" id="travelEndDate">
+                </div>
+                <div class="form-group">
+                    <label><i data-lucide="wallet"></i> Budget Stimato</label>
+                    <input type="number" id="travelBudget" placeholder="es. 500">
+                </div>
+                
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button id="saveTravelBtn" class="btn" onclick="saveTravel()" style="flex: 1;"><i data-lucide="check"></i> Salva</button>
+                    <button class="btn btn-neutral" onclick="closeTravelModal()"><i data-lucide="x"></i> Annulla</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Select Travel Modal (for bulk adding) -->
+        <div id="selectTravelModal" class="modal">
+            <div class="modal-content" style="max-width: 450px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3><i data-lucide="plane"></i> Seleziona Viaggio</h3>
+                    <button onclick="closeSelectTravelModal()" style="background: none; border: none; color: #f87171; font-size: 24px; cursor: pointer;">×</button>
+                </div>
+                <p style="font-size: 14px; opacity: 0.7; margin-bottom: 20px;">Scegli un viaggio esistente a cui aggiungere le transazioni selezionate.</p>
+                
+                <div id="selectTravelOptions" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
+                    <!-- Travels will be loaded here -->
+                </div>
+                
+                <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; text-align: center;">
+                    <button class="btn" onclick="closeSelectTravelModal(); switchTab('travel'); showTravelModal();" style="background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.2); width: 100%;">
+                        + Crea Nuovo Viaggio
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Travel Details Modal -->
+        <div id="travelDetailsModal" class="modal">
+            <div class="modal-content" style="max-width: 600px;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
+                    <div>
+                        <h3 id="tdDest" style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                            <i data-lucide="plane" class="text-primary"></i> <span id="tdDestText">Dettagli Viaggio</span>
+                        </h3>
+                        <div id="tdDates" style="font-size: 13px; opacity: 0.6; margin-top: 4px;"></div>
+                    </div>
+                    <button onclick="closeTravelDetailsModal()" style="background: none; border: none; color: #f87171; font-size: 24px; cursor: pointer;">×</button>
+                </div>
+
+                <div id="tdStats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Speso Totale</div>
+                        <div id="tdSpent" style="font-size: 24px; font-weight: 700; color: #4ade80; margin-top: 5px;">€ 0.00</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Budget</div>
+                        <div id="tdBudget" style="font-size: 24px; font-weight: 700; margin-top: 5px;">€ 0.00</div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <h4 style="margin: 0; font-size: 16px;">Transazioni Associate</h4>
+                    <button class="btn" onclick="openEditTravelFromDetails()" style="padding: 6px 12px; font-size: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+                        <i data-lucide="edit-2" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i> Modifica Viaggio
+                    </button>
+                </div>
+
+                <div id="tdTransactionsList" style="max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; padding: 5px;">
+                    <!-- Transactions will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Container -->
+    <div id="message" class="message"></div>
+
+    <!-- Bulk Edit Action Bar -->
+    <div id="bulkActionBar" class="bulk-action-bar">
+        <div class="bulk-count">
+            <span class="badge" id="bulkCountBadge">0</span> transazioni selezionate
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn" onclick="openBulkCategoryModal()" style="padding: 8px 16px; font-size: 14px;">
+                <i data-lucide="edit-3" style="width: 16px; height: 16px; margin-right: 6px; vertical-align: middle;"></i> Cambia Categoria
+            </button>
+            <button class="btn" onclick="openBulkTravelModal()" style="padding: 8px 16px; font-size: 14px; background: linear-gradient(135deg, #667eea, #764ba2); border: none;">
+                <i data-lucide="plane" style="width: 16px; height: 16px; margin-right: 6px; vertical-align: middle;"></i> Aggiungi a Viaggio
+            </button>
+            <button class="btn btn-neutral" onclick="clearSelection()" style="padding: 8px 16px; font-size: 14px;">
+                Annulla
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL SINCRONIZZAZIONE PREMIUM -->
+    <div id="syncConfirmModal" class="modal" style="z-index: 9999;">
+        <div class="modal-content" style="max-width: 420px; text-align: center; padding: 40px 30px; margin: auto;">
+            <div class="modal-icon-glow" style="margin: 0 auto 25px; width: 80px; height: 80px; border-radius: 50%; background: var(--bg-glass-hover); display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-glass-light); position: relative;">
+                <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background: var(--accent-primary); filter: blur(20px); opacity: 0.15;"></div>
+                <i data-lucide="refresh-cw" style="width: 32px; height: 32px; color: var(--accent-primary); z-index: 1;"></i>
+            </div>
+            
+            <h2 style="font-size: 24px; margin-bottom: 12px; font-weight: 700; color: var(--text-main);">Vuoi collegare questo conto?</h2>
+            <p style="color: var(--text-muted); font-size: 15px; line-height: 1.6; margin-bottom: 30px;">
+                Collegando il conto potrai vedere subito tutte le transazioni nella Dashboard e analizzare il tuo risparmio complessivo.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button id="syncConfirmYes" class="btn" style="background: var(--accent-primary); color: white; border: none; padding: 14px; font-weight: 600; border-radius: 12px;">
+                    Sì, sincronizza ora
+                </button>
+                <button id="syncConfirmNo" class="btn btn-neutral" style="padding: 14px; font-weight: 500; border-radius: 12px;">
+                    No, rimani in "Pronto"
+                </button>
+            </div>
+            
+            <button onclick="closeSyncModal()" style="margin-top: 20px; background: none; border: none; color: var(--text-muted); font-size: 13px; cursor: pointer; text-decoration: underline;">Annulla</button>
+        </div>
+    </div>
+
+    <!-- MODAL VERIFICA TRANSAZIONE -->
+    <div id="verifyTransactionModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            
+            <!-- Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="background: linear-gradient(135deg, #667eea, #764ba2); width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                        <i data-lucide="bot" style="width:20px;height:20px;color:white;"></i>
+                    </div>
+                    <h3 style="margin:0; font-size:18px;" id="verifyModalTitle">Verifica Categoria AI</h3>
+                </div>
+                <button onclick="closeVerifyModal()" style="background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; width:34px; height:34px; border-radius:8px; cursor: pointer; display:flex; align-items:center; justify-content:center; transition: all 0.2s;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#94a3b8'">
+                    <i data-lucide="x" style="width:18px;height:18px;"></i>
+                </button>
+            </div>
+            
+            <!-- Transaction Info -->
+            <div id="verifyTransactionInfoSection" style="background: var(--bg-glass); border: 1px solid var(--border-glass-light); padding: 16px; border-radius: 14px; margin-bottom: 20px;">
+                <div style="font-weight: 600; font-size: 15px; margin-bottom: 10px; line-height:1.4;" id="verifyTransactionDesc">Descrizione</div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div id="verifyTransactionDate" style="font-size: 13px; opacity: 0.6; display:flex; align-items:center; gap:5px;"><i data-lucide="calendar" style="width:13px;height:13px;"></i> Data</div>
+                    <div id="verifyTransactionAmount" style="font-weight: 700; font-size: 20px; color: #f87171;">€ 0.00</div>
+                </div>
+            </div>
+            
+            <!-- Current Category Banner -->
+            <div id="verifyCurrentCategorySection" style="margin-bottom: 20px;">
+                <div style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.5; margin-bottom: 10px;">Categoria AI Attuale</div>
+                <div style="background: linear-gradient(135deg, rgba(102,126,234,0.3) 0%, rgba(118,75,162,0.3) 100%); border: 1px solid rgba(102,126,234,0.4); padding: 16px 20px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div id="verifyCurrentEmoji" style="background: rgba(255,255,255,0.1); width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                            <i data-lucide="shopping-cart" style="width:18px;height:18px;"></i>
+                        </div>
+                        <div style="font-weight: 700; font-size:16px;" id="verifyCurrentCategory">Alimentari</div>
+                    </div>
+                    <div id="verifyCurrentConfidence" style="font-size: 13px; opacity: 0.7; background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 6px;">Confidence: 85%</div>
+                </div>
+            </div>
+            
+            <!-- Confirm/Deny Buttons -->
+            <div id="verifyActionButtons" style="display: flex; gap: 12px; margin-bottom: 0;">
+                <button onclick="confirmCategory()" style="flex: 1; padding: 14px; background: linear-gradient(135deg, #4ade80, #16a34a); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                    <i data-lucide="check-circle-2" style="width:18px;height:18px;"></i> Sì, Corretta
+                </button>
+                <button onclick="showCategorySelector()" style="flex: 1; padding: 14px; background: linear-gradient(135deg, #f87171, #dc2626); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                    <i data-lucide="x-circle" style="width:18px;height:18px;"></i> No, Cambia
+                </button>
+            </div>
+            
+            <!-- Category Selector -->
+            <div id="categorySelectorDiv" style="display: none;">
+                <div style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.5; margin-bottom: 12px; margin-top: 20px;">Seleziona la categoria corretta</div>
+                <div id="categoryOptionsGrid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; max-height: 380px; overflow-y: auto; padding: 4px;">
+                </div>
+                <button onclick="closeVerifyModal()" class="btn btn-neutral" style="width: 100%; padding: 12px; margin-top: 12px; border-radius: 12px; font-size: 14px;">
+                    Annulla
+                </button>
+            </div>
+        </div>
+        </div> <!-- Chiude layout-master -->
+    </div> <!-- Chiude appContainer -->
+
+        <!-- BOTTOM TAB BAR — inside phone shell, outside scroll area -->
+        <div id="appTabBar" class="tabs" style="display: none;">
+            <button class="tab active" onclick="switchTab('home')">
+                <div><i data-lucide="home"></i></div>
+                <div>Home</div>
+            </button>
+            <button class="tab" onclick="switchTab('analysis')">
+                <div><i data-lucide="bar-chart-2"></i></div>
+                <div>Analisi</div>
+            </button>
+            <button class="tab" onclick="switchTab('categories')">
+                <div><i data-lucide="pie-chart"></i></div>
+                <div>Categorie</div>
+            </button>
+            <button class="tab tab-upload" onclick="switchTab('upload')" title="Upload">
+                <div><i data-lucide="plus"></i></div>
+                <div>Upload</div>
+            </button>
+            <button class="tab" onclick="switchTab('travel')">
+                <div><i data-lucide="plane"></i></div>
+                <div>Viaggi</div>
+            </button>
+            <button class="tab" onclick="switchTab('bank')">
+                <div><i data-lucide="landmark"></i></div>
+                <div>Banche</div>
+            </button>
+            <button class="tab" onclick="switchTab('database')">
+                <div><i data-lucide="database"></i></div>
+                <div>DB</div>
+            </button>
+        </div>
+
+        <!-- ── Floating mini-profile (fuori dallo scroll area) ── -->
+        <div id="miniProfile" style="display:none;">
+            <button id="miniProfileBtn" onclick="toggleMiniProfile(event)" title="Account">
+                <img id="userAvatarImg" src="img/avatars/default.png" alt="Avatar">
+                <i data-lucide="chevron-down" style="width:11px;height:11px;opacity:0.55;"></i>
+            </button>
+            <div id="miniProfilePanel">
+                <!-- User name -->
+                <div class="mpp-user">
+                    <img class="mpp-avatar" id="userAvatarImgPanel" src="img/avatars/default.png" alt="">
+                    <span id="userDisplayName" class="mpp-name">Famiglia</span>
+                </div>
+                <div class="mpp-divider"></div>
+                <!-- Dark/light toggle -->
+                <div class="mpp-row">
+                    <span class="mpp-row-lbl"><i data-lucide="moon" style="width:13px;height:13px;vertical-align:-2px;margin-right:5px;"></i>Tema scuro</span>
+                    <label class="theme-sw">
+                        <input type="checkbox" id="themeSwitchInput" onchange="onThemeSwitchChange(this)">
+                        <span class="theme-sw-track"><span class="theme-sw-knob"></span></span>
+                    </label>
+                </div>
+                <div class="mpp-divider"></div>
+                <div class="mpp-item" onclick="openAvatarModal(event)">
+                    <i data-lucide="user-cog" style="width:14px;height:14px;"></i> Cambia avatar
+                </div>
+                <div class="mpp-item danger" onclick="handleLogout()">
+                    <i data-lucide="log-out" style="width:14px;height:14px;"></i> Esci
+                </div>
+            </div>
+        </div>
+
+        </div> <!-- Chiude phone-screen-inner -->
+    </div> <!-- Chiude phoneShell -->
+
+    <!-- Bank Selector Modal -->
+    <div id="bankSelectorModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3><i data-lucide="landmark"></i> Seleziona la tua Banca</h3>
+                <button onclick="closeBankSelector()" style="background: none; border: none; color: #f87171; font-size: 24px; cursor: pointer;">×</button>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="bankSearch" placeholder="Cerca banca (es. BNL, UniCredit...)" oninput="filterInstitutions()" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white;">
+            </div>
+            
+            <div id="institutionsList" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                <div style="text-align: center; padding: 20px; opacity: 0.6;">Caricamento banche...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AVATAR SELECTION MODAL -->
+    <div id="avatarModal" class="modal" style="display: none; z-index: 11000;">
+        <div class="modal-content" style="max-width: 600px; padding: 30px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="background: linear-gradient(135deg, #667eea, #764ba2); width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center;">
+                        <i data-lucide="user" style="width:22px;height:22px;color:white;"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin:0; font-size:20px;">Scegli il tuo Avatar</h3>
+                        <p style="margin:0; font-size:13px; opacity:0.6;">Seleziona un'icona o carica la tua foto</p>
+                    </div>
+                </div>
+                <button onclick="closeAvatarModal()" style="background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; width:34px; height:34px; border-radius:8px; cursor: pointer; display:flex; align-items:center; justify-content:center;">
+                    <i data-lucide="x" style="width:18px;height:18px;"></i>
+                </button>
+            </div>
+            <div class="avatar-grid" id="avatarGrid"></div>
+            <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end;">
+                <button onclick="closeAvatarModal()" class="btn" style="background: rgba(255,255,255,0.05); color: white; width: auto; padding: 10px 25px;">Annulla</button>
+            </div>
+        </div>
+        <input type="file" id="customAvatarInput" accept="image/*" style="display: none;" onchange="handleCustomAvatarUpload(this)">
+    </div>
+
+    <script>
+    // Auth screen particle canvas
+    (function() {
+        const cv = document.getElementById('authCanvas');
+        if (!cv) return;
+        const ctx = cv.getContext('2d');
+        let W, H;
+        function resize() {
+            const shell = document.getElementById('phoneShell');
+            W = cv.width = shell ? shell.offsetWidth : window.innerWidth;
+            H = cv.height = shell ? shell.offsetHeight : window.innerHeight;
+        }
+        resize(); window.addEventListener('resize', resize);
+        const cols = ['rgba(99,102,241,','rgba(217,70,239,','rgba(14,165,233,','rgba(244,63,94,','rgba(251,191,36,','rgba(248,250,252,'];
+        const pts = Array.from({length:180}, () => ({
+            x: Math.random(), y: Math.random(),
+            r: 0.5 + Math.random() * 2.5,
+            a: 0.4 + Math.random() * 0.6,
+            da: (0.004 + Math.random() * 0.008) * (Math.random() > .5 ? 1 : -1),
+            vx: (Math.random() - .5) * 0.07, vy: (Math.random() - .5) * 0.07,
+            col: cols[Math.floor(Math.random() * cols.length)]
+        }));
+        function tick() {
+            if (!document.getElementById('authScreen') || document.getElementById('authScreen').style.display === 'none') return;
+            ctx.clearRect(0, 0, W, H);
+            ctx.strokeStyle = 'rgba(255,255,255,0.016)'; ctx.lineWidth = 1;
+            for (let x = 0; x < W; x += 56) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+            for (let y = 0; y < H; y += 56) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+            pts.forEach(p => {
+                p.x += p.vx / W; p.y += p.vy / H;
+                p.a += p.da; if (p.a <= 0 || p.a >= 1) p.da *= -1;
+                if (p.x < 0) p.x = 1; if (p.x > 1) p.x = 0;
+                if (p.y < 0) p.y = 1; if (p.y > 1) p.y = 0;
+                ctx.beginPath(); ctx.arc(p.x * W, p.y * H, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = p.col + p.a + ')'; ctx.fill();
+            });
+            requestAnimationFrame(tick);
+        }
+        tick();
+    })();
+    </script>
+    <script src="js/main.js"></script>
+    <script src="js/bank.js"></script>
+    <!-- Visual Version Marker -->
+    <div style="position:fixed; bottom:5px; right:10px; font-size:10px; color:rgba(255,255,255,0.2); pointer-events:none; z-index:99999;">v.5.5</div>
+</body>
+</html>
