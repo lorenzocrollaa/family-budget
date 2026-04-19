@@ -28,7 +28,8 @@
     "multer": "^1.4.5-lts.1",
     "pdf-parse": "^1.1.1",
     "plaid": "^41.4.0",
-    "stripe": "^22.0.2"
+    "stripe": "^22.0.2",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "eslint": "^8.56.0",
