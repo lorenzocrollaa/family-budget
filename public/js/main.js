@@ -332,6 +332,7 @@
 
         async function finishAuthentication() {
             updateUserDisplay();
+            document.dispatchEvent(new CustomEvent('userLoaded', { detail: currentUser }));
             document.getElementById('authScreen').style.display = 'none';
             document.getElementById('appContainer').style.display = 'block';
             document.getElementById('appTabBar').style.display = 'flex';
@@ -371,6 +372,38 @@
                 const panel = document.getElementById('userAvatarImgPanel');
                 if (btn) btn.src = avatarSrc;
                 if (panel) panel.src = avatarSrc;
+
+                // Badge piano
+                const badgeEl = document.getElementById('planBadge');
+                if (badgeEl) {
+                    if (currentUser.plan === 'pro') {
+                        badgeEl.textContent = 'PRO';
+                        badgeEl.className = 'plan-badge plan-pro';
+                        badgeEl.onclick = () => openBillingPortal();
+                    } else {
+                        badgeEl.textContent = 'FREE';
+                        badgeEl.className = 'plan-badge plan-free';
+                        badgeEl.onclick = () => startUpgrade();
+                    }
+                }
+            }
+        }
+
+        async function startUpgrade() {
+            try {
+                const data = await apiCall('/stripe/checkout', { method: 'POST' });
+                if (data.url) window.location.href = data.url;
+            } catch (e) {
+                alert('Errore durante il checkout. Riprova.');
+            }
+        }
+
+        async function openBillingPortal() {
+            try {
+                const data = await apiCall('/stripe/portal', { method: 'POST' });
+                if (data.url) window.open(data.url, '_blank');
+            } catch (e) {
+                alert('Errore durante l\'apertura del portale.');
             }
         }
 

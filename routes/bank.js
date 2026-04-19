@@ -1,6 +1,7 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const { authenticateToken } = require('../middleware/auth');
+const { requirePro } = require('../middleware/requirePro');
 const plaidClient = require('../utils/plaidClient');
 const { categorizeUltimate } = require('../utils/ultimateCategorizer');
 
@@ -18,7 +19,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
  * POST /api/bank/create-link-token
  * Genera un token temporaneo per inizializzare Plaid Link nel frontend.
  */
-router.post('/create-link-token', authenticateToken, async (req, res) => {
+router.post('/create-link-token', authenticateToken, requirePro, async (req, res) => {
   try {
     const userId = req.user.id;
     const request = {
@@ -52,7 +53,7 @@ router.post('/create-link-token', authenticateToken, async (req, res) => {
  * POST /api/bank/create-update-link-token/:accountId
  * Genera un token per la Update Mode di Plaid, usato per riparare una connessione (MFA scaduta).
  */
-router.post('/create-update-link-token/:accountId', authenticateToken, async (req, res) => {
+router.post('/create-update-link-token/:accountId', authenticateToken, requirePro, async (req, res) => {
   const { accountId } = req.params;
   const userId = req.user.id;
 
@@ -96,7 +97,7 @@ router.post('/create-update-link-token/:accountId', authenticateToken, async (re
  * POST /api/bank/exchange-public-token
  * Scambia il public_token generato dal frontend con un access_token permanente e salva la connessione.
  */
-router.post('/exchange-public-token', authenticateToken, async (req, res) => {
+router.post('/exchange-public-token', authenticateToken, requirePro, async (req, res) => {
   const { public_token, institution_id, institution_name } = req.body;
   const userId = req.user.id;
 
@@ -182,7 +183,7 @@ router.post('/exchange-public-token', authenticateToken, async (req, res) => {
  * GET /api/bank/accounts
  * Elenca i conti dell'utente
  */
-router.get('/accounts', authenticateToken, async (req, res) => {
+router.get('/accounts', authenticateToken, requirePro, async (req, res) => {
   try {
     const accounts = await prisma.bankAccount.findMany({
       where: { userId: req.user.id },
@@ -198,7 +199,7 @@ router.get('/accounts', authenticateToken, async (req, res) => {
  * POST /api/bank/sync/:accountId
  * Sincronizza le transazioni per un conto o un'intera connessione usando l'API Sync di Plaid
  */
-router.post('/sync/:accountId', authenticateToken, async (req, res) => {
+router.post('/sync/:accountId', authenticateToken, requirePro, async (req, res) => {
   const { accountId } = req.params;
   const userId = req.user.id;
 
@@ -477,7 +478,7 @@ router.post('/sync/:accountId', authenticateToken, async (req, res) => {
  * In Sandbox le transazioni non arrivano automaticamente alla prima sync:
  * bisogna chiamare questa API per "seminare" i dati di test.
  */
-router.post('/sandbox/fire-transactions/:connectionId', authenticateToken, async (req, res) => {
+router.post('/sandbox/fire-transactions/:connectionId', authenticateToken, requirePro, async (req, res) => {
   if (process.env.PLAID_ENV !== 'sandbox') {
     return res.status(403).json({ success: false, error: 'Endpoint disponibile solo in Sandbox' });
   }
@@ -512,7 +513,7 @@ router.post('/sandbox/fire-transactions/:connectionId', authenticateToken, async
  * PATCH /api/bank/accounts/:id/toggle
  * Cambia la visibilità (isEnabled) di un conto specifico
  */
-router.patch('/accounts/:id/toggle', authenticateToken, async (req, res) => {
+router.patch('/accounts/:id/toggle', authenticateToken, requirePro, async (req, res) => {
   const { id } = req.params;
   const userId = req.user.id;
 
@@ -548,7 +549,7 @@ router.patch('/accounts/:id/toggle', authenticateToken, async (req, res) => {
  * DELETE /api/bank/connections/:id
  * Scollega definitivamente la banca
  */
-router.delete('/connections/:id', authenticateToken, async (req, res) => {
+router.delete('/connections/:id', authenticateToken, requirePro, async (req, res) => {
   const { id } = req.params;
   const userId = req.user.id;
 
@@ -585,7 +586,7 @@ router.delete('/connections/:id', authenticateToken, async (req, res) => {
  * POST /api/bank/balance/:accountId
  * Recupera solo il saldo in tempo reale dal prodotto Balance di Plaid
  */
-router.post('/balance/:accountId', authenticateToken, async (req, res) => {
+router.post('/balance/:accountId', authenticateToken, requirePro, async (req, res) => {
   const { accountId } = req.params;
   const userId = req.user.id;
 

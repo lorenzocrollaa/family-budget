@@ -3141,6 +3141,23 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+.plan-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+}
+.plan-free {
+    background: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.7);
+}
+.plan-pro {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+}
 .mpp-divider {
     height: 1px;
     background: var(--border-glass);

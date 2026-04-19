@@ -919,6 +919,7 @@
                 <div class="mpp-user">
                     <img class="mpp-avatar" id="userAvatarImgPanel" src="img/avatars/default.png" alt="">
                     <span id="userDisplayName" class="mpp-name">Famiglia</span>
+                    <span id="planBadge" class="plan-badge plan-free" title="Clicca per gestire il piano">FREE</span>
                 </div>
                 <div class="mpp-divider"></div>
                 <!-- Dark/light toggle -->
@@ -1030,5 +1031,21 @@
     <script src="js/bank.js"></script>
     <!-- Visual Version Marker -->
     <div style="position:fixed; bottom:5px; right:10px; font-size:10px; color:rgba(255,255,255,0.2); pointer-events:none; z-index:99999;">v.5.5</div>
+
+    <!-- AdSense — visibile solo agli utenti free -->
+    <div id="adsenseContainer" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:100; text-align:center;">
+        <!-- Sostituisci con il tag AdSense reale dopo approvazione -->
+        <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script> -->
+    </div>
+    <script>
+        // Mostra AdSense solo agli utenti free dopo il login
+        document.addEventListener('userLoaded', function(e) {
+            if (e.detail && e.detail.plan !== 'pro') {
+                document.getElementById('adsenseContainer').style.display = 'block';
+            }
+        });
+    </script>
 </body>
 </html>

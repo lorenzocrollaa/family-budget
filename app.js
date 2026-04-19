@@ -15,6 +15,7 @@ const categoryRoutes = require('./routes/categories');
 const travelRoutes = require('./routes/travels');
 const kidRoutes = require('./routes/kids');
 const bankRoutes = require('./routes/bank');
+const stripeRoutes = require('./routes/stripe');
 
 // Import middleware
 const { authenticateToken } = require('./middleware/auth');
@@ -67,6 +68,8 @@ app.use('/api/transactions/upload', uploadLimiter);
 
 // Webhook Plaid: raw body PRIMA del json parser globale
 app.use('/api/bank/webhook', express.raw({ type: 'application/json' }));
+// Stripe webhook richiede raw body PRIMA del json parser
+app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
@@ -91,6 +94,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/travels', travelRoutes);
 app.use('/api/kids', kidRoutes);
 app.use('/api/bank', bankRoutes);
+app.use('/api/stripe', stripeRoutes);
 
 // Health Check
 app.get('/api/health', (req, res) => {
