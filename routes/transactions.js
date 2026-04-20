@@ -1181,8 +1181,8 @@ async function updateCategoryStats(userId) {
           update: { totalAmount: Math.abs(amount), transactionCount: stat._count, lastUsed: stat._max.date },
           create: {
             name: stat.category,
-            emoji: DEFAULT_CATEGORIES[stat.category]?.emoji || '💸',
-            color: DEFAULT_CATEGORIES[stat.category]?.color || '#94a3b8',
+            emoji: getMetadata(stat.category).emoji || '💸',
+            color: getMetadata(stat.category).color || '#94a3b8',
             isIncome: amount > 0,
             totalAmount: Math.abs(amount),
             transactionCount: stat._count,
