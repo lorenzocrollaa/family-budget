@@ -49,7 +49,7 @@ app.use(cors({
 // Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'development' ? 2000 : 100,
+  max: process.env.NODE_ENV === 'development' ? 2000 : 500,
   message: {
     error: 'Troppi tentativi, riprova tra 15 minuti'
   }
