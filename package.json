@@ -4,7 +4,7 @@
   "description": "API per Family Budget Tracker con parsing automatico estratti conto",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "npx prisma generate && npx prisma migrate deploy && node app.js",
     "dev": "nodemon app.js",
     "db:migrate": "npx prisma migrate dev",
     "db:migrate:deploy": "npx prisma migrate deploy",
