@@ -135,28 +135,23 @@ async function buildTransactionWhere(req) {
   // ✅ FILTRO AUTO-ESCLUSIONE CONTI DISABILITATI (Global View)
   // Se non stiamo guardando un file specifico e non stiamo guardando un conto specifico,
   // ✅ FILTRO PIAZZA PULITA (Banche vs PDF)
+  const { showAll } = req.query;
+
   if (uploadedFileId) {
-    // Se stiamo guardando un file specifico (PDF), ignoriamo lo stato delle banche
+    // Modalità File Specifico (PDF)
     where.uploadedFileId = uploadedFileId;
     where.bankAccountId = null;
-  } else {
-    // Modalità Bancaria (Home o Conto Singolo)
+  } else if (bankAccountId) {
+    // Modalità Conto Bancario Specifico
     if (!where.AND) where.AND = [];
+    where.AND.push({ bankAccount: { isEnabled: true, isConnected: true } });
+    where.bankAccountId = bankAccountId;
+  } else if (showAll !== 'true') {
+    // Modalità Bancaria (Home web) — solo conti connessi
+    if (!where.AND) where.AND = [];
+    where.AND.push({ bankAccount: { isEnabled: true, isConnected: true } });
+    where.bankAccountId = { not: null };
 
-    // Solo transazioni di conti abilitati e connessi
-    where.AND.push({
-      bankAccount: { isEnabled: true, isConnected: true }
-    });
-
-    if (bankAccountId) {
-      where.bankAccountId = bankAccountId;
-    } else {
-      where.bankAccountId = { not: null };
-    }
-
-    // Finestra 90 giorni di default: se l'utente non ha impostato filtri data espliciti,
-    // mostriamo solo gli ultimi 90 giorni. Le transazioni restano sempre in DB
-    // e tornano visibili se l'utente imposta un range manuale più ampio.
     const hasExplicitDateFilter = (dateFrom && dateFrom !== 'null' && dateFrom !== 'undefined') ||
                                   (dateTo && dateTo !== 'null' && dateTo !== 'undefined');
     if (!hasExplicitDateFilter) {
@@ -166,6 +161,7 @@ async function buildTransactionWhere(req) {
       where.date = { gte: ninetyDaysAgo };
     }
   }
+  // showAll=true → nessun filtro aggiuntivo, mostra tutto
 
   // Importi
   if (minAmount || maxAmount) {
