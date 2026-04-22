@@ -1,5 +1,7 @@
         var API_BASE = '';
         var userEmail = 'demo@famiglia.it';
+
+        function refreshIcons() { if (typeof lucide !== 'undefined') lucide.createIcons(); }
         var currentUser = null;
         var appData = {
             transactions: [],
@@ -266,7 +268,7 @@
             document.getElementById('tabRegisterBtn').classList.toggle('on', !isLogin);
             document.getElementById('authLoginForm').style.display = isLogin ? 'block' : 'none';
             document.getElementById('authRegisterForm').style.display = isLogin ? 'none' : 'block';
-            lucide.createIcons();
+            refreshIcons();
         }
 
         async function handleLogin() {
@@ -843,7 +845,7 @@
                             <div class="tab-empty-sub">Non ci sono transazioni corrispondenti ai criteri.</div>
                         </div>
                     `;
-                    setTimeout(() => lucide.createIcons(), 50);
+                    setTimeout(refreshIcons, 50);
                     return;
                 }
 
@@ -916,7 +918,7 @@
                 });
 
                 console.log(`✅ Mostrate ${transactions.length} transazioni del file corrente`);
-                setTimeout(() => lucide.createIcons(), 50);
+                setTimeout(refreshIcons, 50);
             } catch (error) {
                 console.error('❌ Errore caricamento transazioni:', error);
                 const container = document.getElementById('recentTransactions');
@@ -943,7 +945,7 @@
             document.getElementById('verifyCurrentCategory').textContent = transaction.category;
             document.getElementById('verifyCurrentConfidence').textContent = `Confidence: ${(transaction.confidence * 100).toFixed(0)}%`;
             document.getElementById('verifyTransactionModal').style.display = 'block';
-            setTimeout(() => lucide.createIcons(), 50);
+            setTimeout(refreshIcons, 50);
         }
 
         function closeVerifyModal() {
@@ -1070,7 +1072,7 @@
             });
             document.getElementById('categorySelectorDiv').style.display = 'block';
             document.getElementById('verifyActionButtons').style.display = 'none';
-            setTimeout(() => lucide.createIcons(), 50);
+            setTimeout(refreshIcons, 50);
         }
 
         /**
@@ -1264,7 +1266,7 @@
             });
             
             // Re-inizializza icone Lucide obbligatorio
-            lucide.createIcons();
+            refreshIcons();
         }
 
         async function showCategoryDetails(categoryName) {
@@ -1351,7 +1353,7 @@
                 }
 
                 document.getElementById('categoryModal').style.display = 'block';
-                setTimeout(() => lucide.createIcons(), 50);
+                setTimeout(refreshIcons, 50);
             } catch (error) {
                 console.error('Errore dettagli categoria:', error);
                 showMessage('Errore nel caricamento dei dettagli categoria', 'error');
@@ -1950,7 +1952,7 @@
                     }
                     
                     document.getElementById('travelDetailsModal').style.display = 'block';
-                    setTimeout(() => lucide.createIcons(), 50);
+                    setTimeout(refreshIcons, 50);
                 }
             } catch (error) {
                 console.error('Error loading travel details:', error);
@@ -1981,7 +1983,7 @@
             
             document.getElementById('travelModal').style.display = 'block';
             document.querySelector('#travelModal h3').innerHTML = '<i data-lucide="edit-3"></i> Modifica Viaggio';
-            setTimeout(() => lucide.createIcons(), 50);
+            setTimeout(refreshIcons, 50);
         }
 
         async function removeTransactionFromTravel(travelId, transactionId) {
@@ -2026,7 +2028,7 @@
                         <div class="tab-empty-sub">Crea il tuo primo viaggio per raggruppare le spese</div>
                     </div>
                 `;
-                setTimeout(() => lucide.createIcons(), 50);
+                setTimeout(refreshIcons, 50);
                 return;
             }
 
@@ -2078,7 +2080,7 @@
                 `;
                 grid.appendChild(card);
             });
-            setTimeout(() => lucide.createIcons(), 50);
+            setTimeout(refreshIcons, 50);
         }
 
         async function deleteTravel(id) {
@@ -2138,7 +2140,7 @@
             }
             
             document.getElementById('selectTravelModal').style.display = 'block';
-            setTimeout(() => lucide.createIcons(), 50);
+            setTimeout(refreshIcons, 50);
         }
 
         function closeSelectTravelModal() {
@@ -3011,7 +3013,7 @@
             `;
 
             modal.style.display = 'flex';
-            setTimeout(() => lucide.createIcons(), 10);
+            setTimeout(refreshIcons, 10);
         }
 
         function closeAvatarModal() {

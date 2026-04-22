@@ -2329,8 +2329,20 @@ body {
         width: 100vw !important; height: 100dvh !important;
         border-radius: 0 !important; box-shadow: none !important; border: none !important;
     }
-    .phone-dynamic-island, .phone-btn { display: none !important; }
-    #appContainer { padding-top: 0 !important; }
+    /* Nascondi barra di stato fittizia e decorazioni: il dispositivo reale ha la sua */
+    .phone-dynamic-island, .phone-btn, .phone-status-bar { display: none !important; }
+    /* Lascia spazio alla vera status bar iOS (safe-area-inset-top) */
+    #appContainer {
+        padding-top: env(safe-area-inset-top, 0px) !important;
+    }
+    /* Tab bar: usa safe-area-inset-bottom per la home indicator iPhone */
+    #appTabBar.tabs {
+        padding-bottom: calc(4px + env(safe-area-inset-bottom, 20px)) !important;
+    }
+    /* Mini-profile: scendi sotto la vera status bar */
+    #miniProfile {
+        top: calc(env(safe-area-inset-top, 0px) + 8px) !important;
+    }
 }
 
 /* ── Categories: 2-column compact grid ── */
