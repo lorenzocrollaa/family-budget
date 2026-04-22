@@ -590,7 +590,7 @@ input:focus, select:focus {
 
 .tabs {
     position: fixed;
-    bottom: 24px;
+    bottom: calc(env(safe-area-inset-bottom) + 16px);
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -600,9 +600,12 @@ input:focus, select:focus {
     border: 1px solid var(--border-glass-light);
     border-radius: var(--radius-pill);
     padding: 8px;
+    padding-bottom: 8px;
     gap: 8px;
     box-shadow: var(--shadow-soft), 0 0 0 1px rgba(255,255,255,0.05);
     z-index: 1000;
+    width: auto;
+    max-width: 95%;
 }
 
 .tab {
@@ -875,11 +878,15 @@ input:focus, select:focus {
 
 @media (max-width: 768px) {
     .message {
-        left: 20px;
-        right: 20px;
-        top: 20px; /* Aligned with Dynamic Island/Notch */
-        width: calc(100% - 40px);
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        top: calc(env(safe-area-inset-top) + 12px) !important;
+        width: 90% !important;
+        max-width: 400px;
         animation: fadeIn 0.4s ease-out;
+        justify-content: center;
+        text-align: center;
     }
 }
 
@@ -1874,10 +1881,12 @@ input:focus, select:focus {
    ══════════════════════════════════════════════════════ */
 
 #authScreen {
-    position: fixed; inset: 0; z-index: 9999;
-    background: #05060b;
-    display: flex; align-items: center; justify-content: center;
+    position: fixed; inset: 0; z-index: 10000;
+    background-color: #05060b;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #authCanvas {

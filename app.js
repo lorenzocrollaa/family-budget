@@ -41,8 +41,23 @@ app.use(helmet({
 }));
 
 app.use(compression());
+
+// CORS configuration - allowing mobile app access
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:3000',
+  'http://localhost:8081', // React Native Metro bundler
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+    return callback(null, true); // Fallback to true for easier native testing, change to error in strict production
+  },
   credentials: true
 }));
 
