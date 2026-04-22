@@ -873,6 +873,16 @@ input:focus, select:focus {
     gap: 12px;
 }
 
+@media (max-width: 768px) {
+    .message {
+        left: 20px;
+        right: 20px;
+        top: 20px; /* Aligned with Dynamic Island/Notch */
+        width: calc(100% - 40px);
+        animation: fadeIn 0.4s ease-out;
+    }
+}
+
 .message.success { 
     border-left: 4px solid var(--accent-success);
     /* Gradienti più delicati e coerenti */
