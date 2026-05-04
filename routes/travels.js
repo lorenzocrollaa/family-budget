@@ -233,7 +233,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
     // Rimuovi travelId dalle transazioni associate
     await prisma.transaction.updateMany({
-      where: { travelId: id },
+      where: { travelId: id, userId: req.user.id },
       data: { travelId: null }
     });
 

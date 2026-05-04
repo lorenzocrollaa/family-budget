@@ -920,7 +920,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     // 5Ã¯Â¸ÂÃ¢Æ’Â£ Aggiorna la transazione corrente
     const updatedTransaction = await prisma.transaction.update({
-      where: { id },
+      where: { id, userId: req.user.id },
       data: updateData
     });
 
@@ -1059,7 +1059,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 
     await prisma.transaction.delete({
-      where: { id }
+      where: { id, userId: req.user.id }
     });
 
     await updateCategoryStats(req.user.id);

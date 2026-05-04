@@ -143,6 +143,9 @@ router.post('/:id/link', authenticateToken, async (req, res) => {
     const { transactionIds } = req.body;
     const userId = req.user.id;
 
+    const kid = await prisma.kid.findFirst({ where: { id, userId } });
+    if (!kid) return res.status(404).json({ success: false, error: 'Figlio non trovato' });
+
     await prisma.transaction.updateMany({
       where: {
         id: { in: transactionIds },

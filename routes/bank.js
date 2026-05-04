@@ -210,7 +210,9 @@ router.post('/sync/:accountId', authenticateToken, requirePro, async (req, res) 
     });
 
 
-    if (!dbAccount) throw new Error('Conto non trovato');
+    if (!dbAccount || dbAccount.userId !== userId) {
+      return res.status(404).json({ success: false, error: 'Conto non trovato' });
+    }
 
     // ── COOLDOWN GUARD ───────────────────────────────────────────────────────
     // Previene hammer ripetuto che degrada l'Item Plaid a ITEM_LOGIN_REQUIRED.
