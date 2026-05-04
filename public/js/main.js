@@ -2021,7 +2021,14 @@
             }
 
             if (tabName === 'analysis') {
-                loadAnalysisData();
+                // Se abbiamo già dati cached, li mostriamo subito senza aspettare l'API
+                if (typeof analysisMonthlyData !== 'undefined' && analysisMonthlyData.length > 0) {
+                    renderOverviewChart();
+                    renderCurrentMonth();
+                    loadAnalysisData(); // aggiorna in background silenziosamente
+                } else {
+                    loadAnalysisData();
+                }
             }
             
             if (tabName === 'travel') {
@@ -2941,8 +2948,12 @@
         async function loadAnalysisData() {
         window.loadAnalysisData = loadAnalysisData;
 
-            // ✅ SBLOCCO: Ora mostriamo le analisi anche se non ci sono file caricati (per Open Banking)
             document.getElementById('analysisEmptyState').style.display = 'none';
+            // Mostra skeleton solo se non abbiamo ancora dati
+            const hasCache = typeof analysisMonthlyData !== 'undefined' && analysisMonthlyData.length > 0;
+            if (!hasCache) {
+                document.getElementById('analysisContent').style.display = 'none';
+            }
 
             try {
                 const params = new URLSearchParams();
