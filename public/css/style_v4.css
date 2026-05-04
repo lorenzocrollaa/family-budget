@@ -987,6 +987,13 @@ input:focus, select:focus {
     box-shadow: var(--shadow-premium);
 }
 
+.category-card.selected {
+    border-color: var(--accent-primary);
+    background: var(--bg-glass-hover);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-4px);
+}
+
 /* Responsive & Emulator Logic */
 @media (max-width: 768px), body.is-mobile-emulated {
     /* Professional Standard Navbar */

@@ -34,6 +34,8 @@
         }
         var currentVerifyTransaction = null;
         var pieChartSlices = [];
+        var selectedPieCategory = null;
+        var selectedCategoryCard = null;
         let chartInstance = null;
         var showAllTransactions = false;
         var lastUploadedFileId = null;
@@ -1424,7 +1426,20 @@
             sortedCategories.forEach(([categoryName, data]) => {
                 const card = document.createElement('div');
                 card.className = 'category-card';
-                card.onclick = () => showCategoryDetails(categoryName);
+                card.dataset.category = categoryName;
+                card.onclick = () => {
+                    if (selectedCategoryCard === categoryName) {
+                        // Secondo tap → apre dettagli
+                        selectedCategoryCard = null;
+                        document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
+                        showCategoryDetails(categoryName);
+                    } else {
+                        // Primo tap → evidenzia
+                        selectedCategoryCard = categoryName;
+                        document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
+                        card.classList.add('selected');
+                    }
+                };
                 
                 const catColor = data.color || '#f43f5e';
                 const iconName = getCategoryIcon(categoryName);
@@ -1953,7 +1968,34 @@
                         if (elements.length > 0) {
                             const index = elements[0].index;
                             const categoryName = labels[index];
-                            showCategoryDetails(categoryName);
+
+                            if (selectedPieCategory === categoryName) {
+                                // Secondo tap → apre dettagli
+                                selectedPieCategory = null;
+                                chartInstance.data.datasets[0].offset = 0;
+                                if (amountEl) amountEl.textContent = fmtTotal;
+                                if (inner) inner.textContent = fmtTotal;
+                                chartInstance.update('none');
+                                showCategoryDetails(categoryName);
+                            } else {
+                                // Primo tap → spicchio esce, mostra nome al centro
+                                selectedPieCategory = categoryName;
+                                const catData = appData.categories[categoryName];
+                                const offsets = labels.map((_, i) => i === index ? 18 : 0);
+                                chartInstance.data.datasets[0].offset = offsets;
+                                chartInstance.update('none');
+                                if (amountEl) amountEl.textContent = categoryName;
+                                if (inner) inner.textContent = formatAmount(Math.abs(cleanNumber(catData.amount)));
+                            }
+                        } else {
+                            // Tap fuori dagli spicchi → deseleziona
+                            if (selectedPieCategory) {
+                                selectedPieCategory = null;
+                                chartInstance.data.datasets[0].offset = 0;
+                                if (amountEl) amountEl.textContent = fmtTotal;
+                                if (inner) inner.textContent = fmtTotal;
+                                chartInstance.update('none');
+                            }
                         }
                     }
                 }
@@ -2801,47 +2843,7 @@
                 });
             }
 
-            const canvas = document.getElementById('pieChart');
-            canvas.addEventListener('click', function(event) {
-                if (pieChartSlices.length === 0) return;
-
-                const rect = canvas.getBoundingClientRect();
-                const x = event.clientX - rect.left;
-                const y = event.clientY - rect.top;
-
-                const centerX = canvas.width / 2;
-                const centerY = canvas.height / 2;
-
-                const dx = x - centerX;
-                const dy = y - centerY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance > 100) return;
-
-                let angle = Math.atan2(dy, dx);
-                angle = angle + Math.PI / 2;
-                if (angle < 0) angle += 2 * Math.PI;
-
-                for (let slice of pieChartSlices) {
-                    let start = slice.startAngle;
-                    let end = slice.endAngle;
-                    
-                    if (start < 0) start += 2 * Math.PI;
-                    if (end < 0) end += 2 * Math.PI;
-                    
-                    if (end < start) {
-                        if (angle >= start || angle <= end) {
-                            showCategoryDetails(slice.categoryName);
-                            return;
-                        }
-                    } else {
-                        if (angle >= start && angle <= end) {
-                            showCategoryDetails(slice.categoryName);
-                            return;
-                        }
-                    }
-                }
-            });
+            // Click sul canvas gestito da Chart.js onClick — nessun listener manuale necessario
 
             canvas.addEventListener('mousemove', function(event) {
                 if (pieChartSlices.length === 0) return;
