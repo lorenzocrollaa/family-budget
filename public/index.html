@@ -18,6 +18,9 @@
     <script src="https://unpkg.com/lucide@0.394.0"></script>
 </head>
 <body>
+    <!-- Message Container -->
+    <div id="message" class="message"></div>
+
     <!-- Premium Background Decorators (behind the phone) -->
     <div class="bg-glow-container">
         <div class="glow-blob blob-1"></div>
@@ -155,7 +158,17 @@
                         <input class="auth-finp" type="password" id="loginPassword" placeholder="La tua password">
                     </div>
                     <button class="auth-btn-sub" onclick="handleLogin()">
-                        <span style="display:flex;align-items:center;gap:7px;">Accedi <i data-lucide="arrow-right" style="width:15px;height:15px;"></i></span>
+                        <span style="display:flex;align-items:center;justify-content:center;gap:7px;width:100%;">Accedi <i data-lucide="arrow-right" style="width:15px;height:15px;"></i></span>
+                    </button>
+
+                    <div style="display: flex; align-items: center; gap: 10px; margin: 15px 0;">
+                        <hr style="flex: 1; opacity: 0.1; border: none; border-top: 1px solid white;">
+                        <span style="font-size: 10px; opacity: 0.4; letter-spacing: 1px;">OPPURE</span>
+                        <hr style="flex: 1; opacity: 0.1; border: none; border-top: 1px solid white;">
+                    </div>
+
+                    <button class="auth-btn-sub" id="biometricBtn" onclick="handleBiometricLogin()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); display: none;">
+                        <span style="display:flex;align-items:center;justify-content:center;gap:7px;width:100%;"><i data-lucide="scan-face" style="width:18px;height:18px;"></i> Face ID</span>
                     </button>
                 </div>
 
@@ -330,11 +343,17 @@
                 <i data-lucide="calendar" class="dfb-icon"></i>
                 <div class="dfb-group">
                     <label class="dfb-lbl">Da</label>
-                    <input type="date" id="dateFrom" class="dfb-input">
+                    <div class="date-input-wrapper">
+                        <span id="dateFromDisplay">--/--/----</span>
+                        <input type="date" id="dateFrom" class="dfb-input-hidden" onchange="updateDateDisplay(this, 'dateFromDisplay')">
+                    </div>
                 </div>
                 <div class="dfb-group">
                     <label class="dfb-lbl">A</label>
-                    <input type="date" id="dateTo" class="dfb-input">
+                    <div class="date-input-wrapper">
+                        <span id="dateToDisplay">--/--/----</span>
+                        <input type="date" id="dateTo" class="dfb-input-hidden" onchange="updateDateDisplay(this, 'dateToDisplay')">
+                    </div>
                 </div>
                 <button class="dfb-apply" onclick="applyDateFilter()">Applica</button>
                 <button class="dfb-clear" onclick="clearDateFilter()" title="Azzera"><i data-lucide="x" style="width:12px;height:12px;"></i></button>
@@ -455,7 +474,8 @@
                     <canvas id="pieChart" width="200" height="200" style="cursor:pointer;"></canvas>
                     <div class="cat-pie-center">
                         <div id="pieCenterAmountInner" style="font-size:16px;font-weight:800;font-family:'Outfit',sans-serif;color:var(--text-main);">€ 0</div>
-                        <div style="font-size:9px;opacity:0.45;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-top:2px;">Totale</div>
+                        <div id="pieCenterLabel" style="font-size:9px;opacity:0.45;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-top:2px;">Totale</div>
+                        <div id="pieCenterHint" style="display:none;font-size:9px;color:var(--accent-primary);font-weight:600;margin-top:4px;opacity:0.85;">tocca ancora →</div>
                     </div>
                 </div>
             </div>
@@ -765,23 +785,22 @@
         </div>
     </div>
 
-    <!-- Message Container -->
-    <div id="message" class="message"></div>
+
 
     <!-- Bulk Edit Action Bar -->
     <div id="bulkActionBar" class="bulk-action-bar">
         <div class="bulk-count">
             <span class="badge" id="bulkCountBadge">0</span> transazioni selezionate
         </div>
-        <div style="display: flex; gap: 10px;">
-            <button class="btn" onclick="openBulkCategoryModal()" style="padding: 8px 16px; font-size: 14px;">
-                <i data-lucide="edit-3" style="width: 16px; height: 16px; margin-right: 6px; vertical-align: middle;"></i> Cambia Categoria
+        <div class="bulk-action-buttons">
+            <button class="btn" onclick="openBulkCategoryModal()">
+                <i data-lucide="edit-3"></i> Cambia Categoria
             </button>
-            <button class="btn" onclick="openBulkTravelModal()" style="padding: 8px 16px; font-size: 14px; background: linear-gradient(135deg, #667eea, #764ba2); border: none;">
-                <i data-lucide="plane" style="width: 16px; height: 16px; margin-right: 6px; vertical-align: middle;"></i> Aggiungi a Viaggio
+            <button class="btn" onclick="openBulkTravelModal()" style="background: linear-gradient(135deg, #667eea, #764ba2); border: none;">
+                <i data-lucide="plane"></i> Viaggio
             </button>
-            <button class="btn btn-neutral" onclick="clearSelection()" style="padding: 8px 16px; font-size: 14px;">
-                Annulla
+            <button class="btn btn-neutral" onclick="clearSelection()" style="flex: 0.4;">
+                X
             </button>
         </div>
     </div>

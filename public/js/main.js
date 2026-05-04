@@ -1940,31 +1940,19 @@
                         legend: {
                             display: false
                         },
-                        tooltip: {
-                            backgroundColor: chartColors.tooltipBg,
-                            titleColor: isDarkMode() ? '#fff' : '#000',
-                            bodyColor: isDarkMode() ? '#fff' : '#000',
-                            titleFont: { size: 14, family: "'Inter', sans-serif" },
-                            bodyFont: { size: 13, family: "'Inter', sans-serif" },
-                            padding: 12,
-                            cornerRadius: 8,
-                            borderColor: chartColors.tooltipBorder,
-                            borderWidth: 1,
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    if (context.parsed !== null) {
-                                        label += formatAmount(context.parsed);
-                                    }
-                                    return label;
-                                }
-                            }
-                        }
+                        tooltip: { enabled: false }
                     },
                     onClick: (event, elements) => {
+                        const labelEl = document.getElementById('pieCenterLabel');
+                        const hintEl  = document.getElementById('pieCenterHint');
+
+                        const resetCenter = () => {
+                            if (inner) inner.textContent = fmtTotal;
+                            if (inner) inner.style.color = 'var(--text-main)';
+                            if (labelEl) { labelEl.textContent = 'TOTALE'; labelEl.style.display = ''; }
+                            if (hintEl) hintEl.style.display = 'none';
+                        };
+
                         if (elements.length > 0) {
                             const index = elements[0].index;
                             const categoryName = labels[index];
@@ -1973,28 +1961,29 @@
                                 // Secondo tap → apre dettagli
                                 selectedPieCategory = null;
                                 chartInstance.data.datasets[0].offset = 0;
-                                if (amountEl) amountEl.textContent = fmtTotal;
-                                if (inner) inner.textContent = fmtTotal;
                                 chartInstance.update('none');
+                                resetCenter();
                                 showCategoryDetails(categoryName);
                             } else {
-                                // Primo tap → spicchio esce, mostra nome al centro
+                                // Primo tap → spicchio esce, centro pulito
                                 selectedPieCategory = categoryName;
                                 const catData = appData.categories[categoryName];
-                                const offsets = labels.map((_, i) => i === index ? 18 : 0);
+                                const offsets = labels.map((_, i) => i === index ? 32 : 0);
                                 chartInstance.data.datasets[0].offset = offsets;
                                 chartInstance.update('none');
-                                if (amountEl) amountEl.textContent = categoryName;
-                                if (inner) inner.textContent = formatAmount(Math.abs(cleanNumber(catData.amount)));
+                                if (inner) {
+                                    inner.textContent = formatAmount(Math.abs(cleanNumber(catData.amount)));
+                                    inner.style.color = catData.color || 'var(--accent-primary)';
+                                }
+                                if (labelEl) { labelEl.textContent = categoryName; labelEl.style.display = ''; }
+                                if (hintEl) hintEl.style.display = '';
                             }
                         } else {
-                            // Tap fuori dagli spicchi → deseleziona
                             if (selectedPieCategory) {
                                 selectedPieCategory = null;
                                 chartInstance.data.datasets[0].offset = 0;
-                                if (amountEl) amountEl.textContent = fmtTotal;
-                                if (inner) inner.textContent = fmtTotal;
                                 chartInstance.update('none');
+                                resetCenter();
                             }
                         }
                     }
