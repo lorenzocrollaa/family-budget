@@ -79,6 +79,14 @@
         }
         window.showConfirm = showConfirm;
 
+        const GENERIC_INTERMEDIARIES = ['PAGOPA', 'PAGO PA', 'POSTEPAY', 'POSTE PAY', 'SATISPAY',
+          'PAYPAL', 'SUMUP', 'STRIPE', 'NEXI', 'WORLDLINE', 'AXEPTA', 'KLARNA',
+          'SCALAPAY', 'TINABA', 'HYPE', 'BANCOMAT PAY'];
+        function isGenericIntermediary(description) {
+            const upper = (description || '').toUpperCase();
+            return GENERIC_INTERMEDIARIES.some(name => upper.includes(name));
+        }
+
         // --- HELPER FORMATTAZIONE ---
         function formatAmount(amount, forceSign = false) {
             const formatted = new Intl.NumberFormat('it-IT', {
@@ -1146,8 +1154,9 @@
         async function confirmCategory() {
             if (!currentVerifyTransaction) return;
             try {
-                // 🧠 Cerca altre transazioni con lo stesso nome merchant visibili
-                const similarCount = await countSimilarTransactions(currentVerifyTransaction.description, currentVerifyTransaction.id);
+                const similarCount = isGenericIntermediary(currentVerifyTransaction.description)
+                    ? 0
+                    : await countSimilarTransactions(currentVerifyTransaction.description, currentVerifyTransaction.id);
 
                 if (similarCount > 0) {
                     const applyAll = await showConfirm(`Ci sono ${similarCount} altra/e transazioni di "${currentVerifyTransaction.description}".\n\nVuoi applicare "Verificata" anche a tutte queste? Clicca OK per applicare a tutte, Annulla per solo questa.`);
@@ -1249,8 +1258,9 @@
 
             if (!currentVerifyTransaction) return;
             try {
-                // 🧠 Cerca altre transazioni con lo stesso nome merchant
-                const similarCount = await countSimilarTransactions(currentVerifyTransaction.description, currentVerifyTransaction.id);
+                const similarCount = isGenericIntermediary(currentVerifyTransaction.description)
+                    ? 0
+                    : await countSimilarTransactions(currentVerifyTransaction.description, currentVerifyTransaction.id);
 
                 if (similarCount > 0) {
                     const applyAll = await showConfirm(`Ci sono ${similarCount} altra/e transazioni di "${currentVerifyTransaction.description}"!\n\nVuoi cambiare anche la loro categoria in "${newCategory}"? Clicca OK per tutte, Annulla per solo questa.`);

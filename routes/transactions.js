@@ -15,6 +15,19 @@ const { getMetadata } = require('../utils/categoryMetadata');
 const router = express.Router();
 const prisma = new PrismaClient();
 
+// Intermediari di pagamento generici: non vanno salvati come keyword
+// perché lo stesso merchant copre categorie diverse (es. PagoPA = tasse, multe, rette...)
+const GENERIC_INTERMEDIARIES = new Set([
+  'PAGOPA', 'PAGO PA', 'POSTEPAY', 'POSTE PAY', 'SATISPAY', 'PAYPAL',
+  'SUMUP', 'STRIPE', 'NEXI', 'WORLDLINE', 'AXEPTA', 'KLARNA',
+  'SCALAPAY', 'TINABA', 'HYPE', 'BANCOMAT PAY'
+]);
+
+function isGenericIntermediary(description) {
+  const upper = (description || '').toUpperCase();
+  return [...GENERIC_INTERMEDIARIES].some(name => upper.includes(name));
+}
+
 // Configurazione multer per upload file
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -773,8 +786,8 @@ router.put('/bulk-verify-by-description', authenticateToken, async (req, res) =>
 
     console.log(`🧠 Smart Learning: aggiornate ${result.count} transazioni di "${description}"`);
 
-    // ✅ FIX BUG: Salva le keyword per apprendimento futuro (era mancante!)
-    if (category) {
+    // Salva keyword + MerchantCache solo se non è un intermediario generico
+    if (category && !isGenericIntermediary(description)) {
       const keywords = extractKeywords(description);
       if (keywords.length > 0) {
         console.log(`📝 Bulk-learning keywords: [${keywords.join(', ')}] → ${category}`);
@@ -787,7 +800,6 @@ router.put('/bulk-verify-by-description', authenticateToken, async (req, res) =>
         ).catch(kwError => console.error('Errore batch keyword upsert:', kwError.message));
       }
 
-      // ✅ FIX BUG: Salva anche in MerchantCache per lookup esatto futuro - NORMALIZZATO MAIUSCOLO
       try {
         const cleanDesc = description.trim().toUpperCase();
         await prisma.merchantCache.upsert({
@@ -799,6 +811,8 @@ router.put('/bulk-verify-by-description', authenticateToken, async (req, res) =>
       } catch (cacheErr) {
         console.error('Errore MerchantCache:', cacheErr.message);
       }
+    } else if (category) {
+      console.log(`⚠️ Intermediario generico "${description}" — keyword learning saltato`);
     }
 
     res.json({
@@ -846,16 +860,14 @@ router.put('/:id', authenticateToken, async (req, res) => {
       updateData.confidence = 1.0;
       
       console.log(`Ã°Å¸Â¤â€“ Learning attivato: "${existingTransaction.description}" Ã¢â€ â€™ ${category}`);
-      
-      // 1Ã¯Â¸ÂÃ¢Æ’Â£ Estrai keywords dalla descrizione
-      const keywords = extractKeywords(existingTransaction.description);
-      
+      // Estrai e salva keywords solo se non e un intermediario generico
+      const keywords = isGenericIntermediary(existingTransaction.description)
+        ? []
+        : extractKeywords(existingTransaction.description);
+
       if (keywords.length > 0) {
-        console.log(`Ã°Å¸â€â€˜ Keywords estratte: [${keywords.join(', ')}]`);
         learnedKeywordsCount = keywords.length;
-        
-        // 2Ã¯Â¸ÂÃ¢Æ’Â£ Salva le keywords nel database
-                // Batch in singola transazione DB invece di N round-trip
+
         await prisma.$transaction(
           keywords.map(keyword => prisma.categoryKeyword.upsert({
             where: { keyword_userId: { keyword: keyword.toLowerCase(), userId: req.user.id } },
@@ -863,8 +875,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
             create: { keyword: keyword.toLowerCase(), category, weight: 1.0, isUserDefined: true, userId: req.user.id }
           }))
         ).catch(kwError => console.error('Errore batch keyword upsert:', kwError.message));
-        
-        console.log(`Ã¢Å“â€¦ Salvate ${keywords.length} keyword per future categorizzazioni`);
+
         
         // 3Ã¯Â¸ÂÃ¢Æ’Â£ Trova transazioni simili NON verificate
         const similarTransactions = await prisma.transaction.findMany({
