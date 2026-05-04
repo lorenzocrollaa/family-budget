@@ -1,4 +1,6 @@
-        var API_BASE = '';
+        var API_BASE = (window.location.protocol === 'capacitor:' || window.location.protocol === 'ionic:')
+            ? 'https://family-budget-production-2924.up.railway.app'
+            : '';
         var userEmail = 'demo@famiglia.it';
 
         function refreshIcons() { if (typeof lucide !== 'undefined') lucide.createIcons(); }
@@ -45,7 +47,38 @@
         window.getLastUploadedFileId = () => lastUploadedFileId;
         window.getLastBankAccountId = () => lastBankAccountId;
         window.setLastFileDateRange = (val) => { lastFileDateRange = val; };
-        
+
+        function showConfirm(message, { okLabel = 'Ok', cancelLabel = 'Annulla' } = {}) {
+            return new Promise(resolve => {
+                const parts = message.split('\n\n');
+                const title = parts.length > 1 ? parts[0] : null;
+                const body = parts.length > 1 ? parts.slice(1).join('\n\n') : message;
+
+                const overlay = document.createElement('div');
+                overlay.style.cssText = 'position:fixed;inset:0;background:var(--bg-overlay);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;';
+
+                const card = document.createElement('div');
+                card.style.cssText = 'background:var(--bg-card);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--border-glass-light);border-radius:var(--radius-lg);width:100%;max-width:320px;padding:28px 24px 20px;box-shadow:var(--shadow-premium);animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);color:var(--text-main);text-align:center;';
+                card.innerHTML = `
+                    ${title ? `<div style="font-size:16px;font-weight:700;margin-bottom:12px;line-height:1.3;">${title}</div>` : ''}
+                    <div style="font-size:14px;color:var(--text-muted);line-height:1.6;margin-bottom:24px;">${body.replace(/\n/g, '<br>')}</div>
+                    <div style="display:flex;gap:10px;">
+                        <button class="sc-cancel" style="flex:1;padding:12px;border-radius:var(--radius-md);border:1px solid var(--border-glass-light);background:var(--bg-glass);color:var(--text-main);font-size:15px;font-weight:500;cursor:pointer;">${cancelLabel}</button>
+                        <button class="sc-ok" style="flex:1;padding:12px;border-radius:var(--radius-md);border:none;background:var(--accent-primary);color:#fff;font-size:15px;font-weight:600;cursor:pointer;">${okLabel}</button>
+                    </div>
+                `;
+
+                overlay.appendChild(card);
+                document.body.appendChild(overlay);
+
+                const close = result => { overlay.remove(); resolve(result); };
+                card.querySelector('.sc-cancel').onclick = () => close(false);
+                card.querySelector('.sc-ok').onclick = () => close(true);
+                overlay.onclick = e => { if (e.target === overlay) close(false); };
+            });
+        }
+        window.showConfirm = showConfirm;
+
         // --- HELPER FORMATTAZIONE ---
         function formatAmount(amount, forceSign = false) {
             const formatted = new Intl.NumberFormat('it-IT', {
@@ -227,7 +260,7 @@
             if (token) {
                 if (!currentUser) {
                     try {
-                        const response = await fetch('/api/auth/profile', {
+                        const response = await fetch(API_BASE + '/api/auth/profile', {
                             headers: { 'Authorization': `Bearer ${token}` }
                         });
                         if (response.ok) {
@@ -274,14 +307,23 @@
         async function handleLogin() {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
+            // Corretto il selettore per il tuo HTML
+            const btn = document.querySelector('.auth-btn-sub');
             
             if(!email || !password) {
                 showMessage('Inserisci email e password', 'warning');
                 return;
             }
+
+            // Effetto caricamento sul pulsante
+            const originalText = btn ? btn.innerHTML : 'Accedi';
+            if (btn) {
+                btn.innerHTML = '<i class="lucide-loader-2 animate-spin"></i> Accesso...';
+                btn.disabled = true;
+            }
             
             try {
-                const response = await fetch('/api/auth/login', {
+                const response = await fetch(API_BASE + '/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -294,25 +336,87 @@
                     finishAuthentication();
                     showMessage('Accesso effettuato con successo!', 'success');
                 } else {
-                    showMessage(result.error || 'Credenziali non valide', 'error');
+                    // Feedback visivo immediato
+                    btn.classList.add('btn-error-shake');
+                    setTimeout(() => btn.classList.remove('btn-error-shake'), 500);
+                    showMessage(result.error || 'Credenziali non valide. Riprova.', 'error');
                 }
             } catch(e) {
-                showMessage('Errore di connessione', 'error');
+                showMessage('Errore di connessione. Verifica internet.', 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         }
-        
-        async function handleRegister() {
+
+        async function handleBiometricLogin() {
+            if (!window.Capacitor || !window.Capacitor.Plugins.NativeBiometric) {
+                showMessage("Face ID non disponibile su questo dispositivo o plugin non installato.", "info");
+                return;
+            }
+
+            const { NativeBiometric } = window.Capacitor.Plugins;
+            
+            try {
+                const result = await NativeBiometric.isAvailable();
+                if (!result.isAvailable) {
+                    showMessage("Biometria non configurata sul telefono.", "warning");
+                    return;
+                }
+
+                const verified = await NativeBiometric.verifyIdentity({
+                    reason: "Accedi a Family Budget",
+                    title: "Autenticazione Biometrica",
+                    subtitle: "Usa Face ID o Touch ID",
+                    description: "Conferma la tua identità per accedere ai tuoi dati finanziari."
+                });
+
+                // Se verificato, cerchiamo di recuperare il token salvato o chiediamo login normale se è la prima volta
+                const savedToken = localStorage.getItem('authToken');
+                if (savedToken) {
+                    // Verifichiamo il token col server
+                    const response = await fetch(API_BASE + '/api/auth/profile', {
+                        headers: { 'Authorization': 'Bearer ' + savedToken }
+                    });
+                    if (response.ok) {
+                        const profile = await response.json();
+                        currentUser = profile.user;
+                        finishAuthentication();
+                        showMessage('Accesso biometrico riuscito!', 'success');
+                    } else {
+                        showMessage('Sessione scaduta. Effettua il login normale una volta per riattivare il Face ID.', 'info');
+                    }
+                } else {
+                    showMessage('Effettua il login normale la prima volta per attivare il Face ID.', 'info');
+                }
+            } catch (e) {
+                console.error('Biometric error:', e);
+                // Non mostriamo errore se l'utente annulla
+                if (e.code !== "UserCancellation") {
+                    showMessage("Errore durante l'autenticazione biometrica.", "error");
+                }
+            }
+        }
+            async function handleRegister() {
             const name = document.getElementById('registerName').value;
             const email = document.getElementById('registerEmail').value;
             const password = document.getElementById('registerPassword').value;
+            const btn = document.querySelector('.auth-btn-reg');
             
             if(!name || !email || !password) {
                 showMessage('Tutti i campi sono obbligatori', 'warning');
                 return;
             }
+
+            // Feedback caricamento
+            const originalText = btn ? btn.innerHTML : 'Registrati';
+            if (btn) {
+                btn.innerHTML = '<span style="display:flex;align-items:center;justify-content:center;gap:7px;width:100%;"><i class="lucide-loader-2 animate-spin"></i> Creazione...</span>';
+                btn.disabled = true;
+            }
             
             try {
-                const response = await fetch('/api/auth/register', {
+                const response = await fetch(API_BASE + '/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, name, password })
@@ -325,10 +429,20 @@
                     finishAuthentication();
                     showMessage('Benvenuto in Family Budget!', 'success');
                 } else {
+                    // Feedback errore (es. email già esistente)
+                    if (btn) {
+                        btn.classList.add('btn-error-shake');
+                        setTimeout(() => btn.classList.remove('btn-error-shake'), 500);
+                    }
                     showMessage(result.error || 'Errore durante la registrazione', 'error');
                 }
             } catch(e) {
                 showMessage('Errore di connessione', 'error');
+            } finally {
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
             }
         }
 
@@ -345,11 +459,43 @@
                 authResolve(token);
                 authResolve = null;
             } else {
-                // Riavvia il caricamento dei dati se non eravamo in attesa di un API Call bloccata
                 await initializeApplicationData();
             }
-            
+
+            // --- LOGICA FACE ID AUTOMATICA DOPO LOGIN ---
+            if (window.Capacitor && window.Capacitor.Plugins.NativeBiometric) {
+                const { NativeBiometric } = window.Capacitor.Plugins;
+                const result = await NativeBiometric.isAvailable();
+                
+                if (result.isAvailable && localStorage.getItem('faceIdEnabled') !== 'true' && localStorage.getItem('faceIdAsked') !== 'true') {
+                    setTimeout(async () => {
+                        if (await showConfirm("Vuoi attivare il Face ID per accedere più velocemente la prossima volta?", { okLabel: 'Attiva', cancelLabel: 'No grazie' })) {
+                            localStorage.setItem('faceIdEnabled', 'true');
+                            showMessage("Face ID attivato per i prossimi accessi!", "success");
+                        }
+                        localStorage.setItem('faceIdAsked', 'true');
+                    }, 1000);
+                }
+            }
+
             setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 100);
+        }
+
+        async function checkBiometric() {
+            if (!window.Capacitor || !window.Capacitor.Plugins.NativeBiometric) return;
+            const { NativeBiometric } = window.Capacitor.Plugins;
+            try {
+                const result = await NativeBiometric.isAvailable();
+                if (result.isAvailable) {
+                    const bioBtn = document.getElementById('biometricBtn');
+                    if (bioBtn) bioBtn.style.display = 'block';
+                    if (localStorage.getItem('faceIdEnabled') === 'true' && document.getElementById('authScreen').style.display !== 'none') {
+                        setTimeout(() => handleBiometricLogin(), 500);
+                    }
+                }
+            } catch (e) {
+                console.log('Biometric check skipped:', e);
+            }
         }
 
         function handleLogout() {
@@ -445,6 +591,9 @@
             // Inizializza Tema
             initTheme();
             
+            // Inizializza Biometria (Face ID)
+            checkBiometric();
+            
             const dropzone = document.getElementById('dropzone');
             const fileInput = document.getElementById('fileInput');
 
@@ -525,7 +674,7 @@
                 }
 
                 const startTime = Date.now();
-                let response = await fetch('/api/transactions/upload', {
+                let response = await fetch(API_BASE + '/api/transactions/upload', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: formData
@@ -536,7 +685,7 @@
                     console.log('🔄 Token scaduto durante upload, provo a rigenerarlo e riprovo...');
                     localStorage.removeItem('authToken');
                     const newToken = await ensureAuthenticated();
-                    response = await fetch('/api/transactions/upload', {
+                    response = await fetch(API_BASE + '/api/transactions/upload', {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${newToken}` },
                         body: formData
@@ -578,6 +727,11 @@
                                 if (dates.length === 2 && dates[0] && dates[1]) {
                                     document.getElementById('dateFrom').value = dates[0].trim();
                                     document.getElementById('dateTo').value = dates[1].trim();
+                                    
+                                    // Sync display
+                                    updateDateDisplay(document.getElementById('dateFrom'), 'dateFromDisplay');
+                                    updateDateDisplay(document.getElementById('dateTo'), 'dateToDisplay');
+                                    
                                     console.log('📅 Date Filters Auto-Updated:', dates[0], 'to', dates[1]);
                                     
                                     currentDateFilter = {
@@ -904,7 +1058,7 @@
                                 ${trans.bankAccountId ? '<i data-lucide="landmark" style="width:12px; height:12px; display:inline; margin-left:4px; opacity:0.4;"></i>' : ''}
                             </div>
                             <div class="tx-meta">
-                                <span><i data-lucide="calendar" style="width:12px; height:12px; display:inline-block; vertical-align:middle; margin-right:2px;"></i> ${trans.date}</span>
+                                <span><i data-lucide="calendar" style="width:12px; height:12px; display:inline-block; vertical-align:middle; margin-right:2px;"></i> ${new Date(trans.date).toLocaleDateString('it-IT')}</span>
                                 <span class="tx-badge cat-badge">${trans.category}</span>
                                 ${badgeHTML}
                                 ${trans.originalText && trans.originalText !== trans.description ? `<span style="font-size: 11px; opacity: 0.35; font-style: italic; display: block; margin-top: 2px;">🏦 ${trans.originalText}</span>` : ''}
@@ -996,7 +1150,7 @@
                 const similarCount = await countSimilarTransactions(currentVerifyTransaction.description, currentVerifyTransaction.id);
 
                 if (similarCount > 0) {
-                    const applyAll = confirm(`Ci sono ${similarCount} altra/e transazioni di "${currentVerifyTransaction.description}".\n\nVuoi applicare "Verificata" anche a tutte queste? Clicca OK per applicare a tutte, Annulla per solo questa.`);
+                    const applyAll = await showConfirm(`Ci sono ${similarCount} altra/e transazioni di "${currentVerifyTransaction.description}".\n\nVuoi applicare "Verificata" anche a tutte queste? Clicca OK per applicare a tutte, Annulla per solo questa.`);
                     if (applyAll) {
                         showMessage('Applicando a tutte le transazioni...', 'info');
                         await apiCall(`/api/transactions/bulk-verify-by-description`, {
@@ -1099,7 +1253,7 @@
                 const similarCount = await countSimilarTransactions(currentVerifyTransaction.description, currentVerifyTransaction.id);
 
                 if (similarCount > 0) {
-                    const applyAll = confirm(`Ci sono ${similarCount} altra/e transazioni di "${currentVerifyTransaction.description}"!\n\nVuoi cambiare anche la loro categoria in "${newCategory}"? Clicca OK per tutte, Annulla per solo questa.`);
+                    const applyAll = await showConfirm(`Ci sono ${similarCount} altra/e transazioni di "${currentVerifyTransaction.description}"!\n\nVuoi cambiare anche la loro categoria in "${newCategory}"? Clicca OK per tutte, Annulla per solo questa.`);
                     if (applyAll) {
                         showMessage(`Applicando "${newCategory}" a tutte le transazioni...`, 'info');
                         await apiCall(`/api/transactions/bulk-verify-by-description`, {
@@ -1238,13 +1392,18 @@
 
         async function updateCategoriesDisplay() {
             const container = document.getElementById('categoriesGrid');
+            if (!container) return;
+
             if (Object.keys(appData.categories).length === 0) {
-                container.innerHTML = ''; // ✅ Rimosso robottino superfluo
+                container.innerHTML = '';
+                if (typeof drawPieChart === 'function') drawPieChart();
                 return;
             }
 
             container.innerHTML = '';
-            const sortedCategories = Object.entries(appData.categories).sort((a, b) => b[1].amount - a[1].amount);
+            const sortedCategories = Object.entries(appData.categories).sort((a, b) => {
+                return Math.abs(cleanNumber(b[1].amount)) - Math.abs(cleanNumber(a[1].amount));
+            });
 
             sortedCategories.forEach(([categoryName, data]) => {
                 const card = document.createElement('div');
@@ -1267,6 +1426,12 @@
             
             // Re-inizializza icone Lucide obbligatorio
             refreshIcons();
+
+            // 🔥 DISEGNA IL GRAFICO A TORTA
+            if (typeof drawPieChart === 'function') {
+                console.log('🥧 Chiamata drawPieChart da updateCategoriesDisplay');
+                drawPieChart();
+            }
         }
 
         async function showCategoryDetails(categoryName) {
@@ -1330,7 +1495,7 @@
                             </div>
                             <div>
                                 <div style="font-weight: 600; font-size: 14px;">${trans.description}</div>
-                                <div style="font-size: 11px; opacity: 0.5;">${trans.date}</div>
+                                <div style="font-size: 11px; opacity: 0.5;"><i data-lucide="calendar" style="width:10px;height:10px;vertical-align:middle;margin-right:3px;"></i>${new Date(trans.date).toLocaleDateString('it-IT')}</div>
                             </div>
                         </div>
                         <div style="font-weight: 700; color: #f43f5e; font-size: 15px;">${formatAmount(trans.amount)}</div>
@@ -1351,13 +1516,19 @@
                 if (transactions.length === 0) {
                     container.innerHTML = '<div style="text-align: center; opacity: 0.6; padding: 20px;">Nessuna transazione trovata per questa categoria nel periodo selezionato</div>';
                 }
-
                 document.getElementById('categoryModal').style.display = 'block';
                 setTimeout(refreshIcons, 50);
             } catch (error) {
                 console.error('Errore dettagli categoria:', error);
                 showMessage('Errore nel caricamento dei dettagli categoria', 'error');
             }
+        }
+
+        function updateDateDisplay(input, displayId) {
+            if (!input.value) return;
+            const date = new Date(input.value);
+            const formatted = date.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            document.getElementById(displayId).textContent = formatted;
         }
 
         function showDateFilter() {
@@ -1367,25 +1538,24 @@
         async function applyDateFilter() {
             const dateFrom = document.getElementById('dateFrom').value;
             const dateTo = document.getElementById('dateTo').value;
-
-            if (!dateFrom || !dateTo) {
-                showMessage('Seleziona entrambe le date', 'error');
+            
+            if(!dateFrom || !dateTo) {
+                showMessage('Seleziona un intervallo di date', 'warning');
                 return;
             }
 
-            if (dateFrom > dateTo) {
-                showMessage('Data inizio deve essere precedente alla data fine', 'error');
-                return;
-            }
+            // Aggiorna le scritte personalizzate
+            updateDateDisplay(document.getElementById('dateFrom'), 'dateFromDisplay');
+            updateDateDisplay(document.getElementById('dateTo'), 'dateToDisplay');
 
             currentDateFilter = { from: dateFrom, to: dateTo };
             showMessage('Applicando filtro...', 'info');
             await updateStatsFromAPI();
-            await updateTransactionsFromAPI(); // 🆕 Aggiorna anche le transazioni nella home
+            await updateTransactionsFromAPI();
             drawPieChart(); drawMiniCharts();
 
-            const fromFormatted = new Date(dateFrom).toLocaleDateString('it-IT');
-            const toFormatted = new Date(dateTo).toLocaleDateString('it-IT');
+            const fromFormatted = new Date(dateFrom).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const toFormatted = new Date(dateTo).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
             showMessage(`Filtro applicato: ${fromFormatted} - ${toFormatted}`, 'success');
         }
 
@@ -1399,58 +1569,52 @@
             
             document.getElementById('dateFrom').value = from;
             document.getElementById('dateTo').value = to;
+            
+            // Aggiorna display personalizzati
+            updateDateDisplay(document.getElementById('dateFrom'), 'dateFromDisplay');
+            updateDateDisplay(document.getElementById('dateTo'), 'dateToDisplay');
+
             currentDateFilter = { from, to };
             
-            console.log(`📅 Auto-Filter: Last 30 Days (${from} to ${to})`);
             await updateStatsFromAPI();
             await updateTransactionsFromAPI();
             drawPieChart(); drawMiniCharts();
         }
 
         async function clearDateFilter() {
-            // Se abbiamo un range di date originale del file E stiamo visualizzando quel file, lo ripristiniamo
             if (lastUploadedFileId && lastFileDateRange) {
                 const dates = lastFileDateRange.split(' to ');
-                if (dates.length === 2 && dates[0] && dates[1]) {
-                    const from = dates[0].trim();
-                    const to = dates[1].trim();
-                    
-                    document.getElementById('dateFrom').value = from;
-                    document.getElementById('dateTo').value = to;
-                    currentDateFilter = { from, to };
-                    
-                    showMessage(`Date ripristinate al range del file: ${from} - ${to}`, 'info');
-                } else {
-                    currentDateFilter = null;
-                    document.getElementById('dateFrom').value = '';
-                    document.getElementById('dateTo').value = '';
-                    showMessage('Filtri data rimossi', 'info');
+                if (dates.length === 2) {
+                    document.getElementById('dateFrom').value = dates[0].trim();
+                    document.getElementById('dateTo').value = dates[1].trim();
                 }
             } else {
-                currentDateFilter = null;
-                document.getElementById('dateFrom').value = '';
-                document.getElementById('dateTo').value = '';
-                console.log('🧹 Filtri data rimossi completamente (Modalità Banca/Global)');
-                showMessage('Filtri data rimossi', 'info');
+                const today = new Date();
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(today.getDate() - 30);
+                document.getElementById('dateFrom').value = thirtyDaysAgo.toISOString().split('T')[0];
+                document.getElementById('dateTo').value = today.toISOString().split('T')[0];
             }
             
-            // ✅ Non rimuovere lastUploadedFileId automaticamente per non mostrare il "Memory DB" da 3M euro
-            // se l'utente ha appena caricato un file.
+            // Sync display
+            updateDateDisplay(document.getElementById('dateFrom'), 'dateFromDisplay');
+            updateDateDisplay(document.getElementById('dateTo'), 'dateToDisplay');
+            
+            currentDateFilter = { 
+                from: document.getElementById('dateFrom').value, 
+                to: document.getElementById('dateTo').value 
+            };
             
             if (lastUploadedFileId) {
                 document.getElementById('transactionsTitle').textContent = 'Transazioni File Corrente';
             } else {
                 document.getElementById('transactionsTitle').textContent = 'Ultimi Movimenti (Global)';
             }
+
             await updateStatsFromAPI();
-            await updateTransactionsFromAPI(); 
+            await updateTransactionsFromAPI();
             drawPieChart(); drawMiniCharts();
-            
-            if (lastUploadedFileId) {
-                showMessage('Mostrando tutte le transazioni del file corrente (senza limiti di data)', 'success');
-            } else {
-                showMessage('Mostrando tutti i dati globali', 'success');
-            }
+            showMessage('Filtri ripristinati', 'success');
         }
 
         // ── Pig character state ──
@@ -1650,13 +1814,39 @@
         }
         window.drawMiniCharts = drawMiniCharts;
 
+        function cleanNumber(val) {
+            if (typeof val === 'number') return val;
+            if (!val) return 0;
+            // Rimuove simboli €, punti delle migliaia, e cambia la virgola decimale in punto
+            let s = String(val).replace(/[^0-9,-]/g, '').replace(',', '.');
+            return parseFloat(s) || 0;
+        }
+
         function drawPieChart() {
             window.drawPieChart = drawPieChart;
             const canvas = document.getElementById('pieChart');
             const emptyChart = document.getElementById('emptyChart');
             const centerInfo = document.getElementById('pieCenterInfo');
+            if (!canvas || !centerInfo) return;
 
+            // Fallback: se appData.categories è vuoto, proviamo a ricostruirlo dalle schede visibili
             if (Object.keys(appData.categories).length === 0) {
+                console.log('🔄 Tentativo recupero dati da UI...');
+                const cards = document.querySelectorAll('.category-card');
+                cards.forEach(card => {
+                    const name = card.querySelector('div:nth-child(2)')?.textContent;
+                    const amountText = card.querySelector('div:nth-child(3)')?.textContent;
+                    if (name && amountText) {
+                        appData.categories[name] = { amount: amountText, color: card.querySelector('i')?.parentElement?.style.color };
+                    }
+                });
+            }
+
+            const total = Object.values(appData.categories).reduce((sum, cat) => {
+                return sum + Math.abs(cleanNumber(cat.amount));
+            }, 0);
+
+            if (total === 0) {
                 canvas.style.display = 'none';
                 centerInfo.style.display = 'none';
                 emptyChart.style.display = 'block';
@@ -1667,15 +1857,15 @@
             centerInfo.style.display = 'flex';
             emptyChart.style.display = 'none';
 
-            const total = Object.values(appData.categories).reduce((sum, cat) => sum + cat.amount, 0);
-            if (total === 0) return;
-
             const fmtTotal = formatAmount(total);
-            document.getElementById('pieCenterAmount').textContent = fmtTotal;
+            const amountEl = document.getElementById('pieCenterAmount');
+            if (amountEl) amountEl.textContent = fmtTotal;
             const inner = document.getElementById('pieCenterAmountInner');
             if (inner) inner.textContent = fmtTotal;
 
-            const sortedCategories = Object.entries(appData.categories).sort((a, b) => b[1].amount - a[1].amount);
+            const sortedCategories = Object.entries(appData.categories).sort((a, b) => {
+                return Math.abs(cleanNumber(b[1].amount)) - Math.abs(cleanNumber(a[1].amount));
+            });
             
             const labels = [];
             const data = [];
@@ -1683,8 +1873,8 @@
 
             sortedCategories.forEach(([categoryName, catData], index) => {
                 labels.push(categoryName);
-                data.push(catData.amount);
-                // Usa il colore reale della categoria dal server, fallendo sul grigio se manca
+                const val = Math.abs(cleanNumber(catData.amount));
+                data.push(val); 
                 bgColors.push(catData.color || '#94a3b8');
             });
 
@@ -1913,7 +2103,7 @@
                     document.getElementById('tdDestText').textContent = travel.destination;
                     document.getElementById('tdDates').innerHTML = `
                         <i data-lucide="calendar" style="width: 12px; height: 12px;"></i> 
-                        ${new Date(travel.startDate).toLocaleDateString('it-IT')} - ${new Date(travel.endDate).toLocaleDateString('it-IT')}
+                        ${new Date(travel.startDate).toLocaleDateString('it-IT', {day:'2-digit',month:'2-digit',year:'numeric'})} - ${new Date(travel.endDate).toLocaleDateString('it-IT', {day:'2-digit',month:'2-digit',year:'numeric'})}
                     `;
                     document.getElementById('tdSpent').textContent = `€ ${travel.spent.toFixed(2)}`;
                     document.getElementById('tdBudget').textContent = `€ ${travel.budget.toFixed(2)}`;
@@ -1938,7 +2128,7 @@
                             item.innerHTML = `
                                 <div style="flex: 1; min-width: 0;">
                                     <div style="font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${t.description}</div>
-                                    <div style="font-size: 11px; opacity: 0.6;">${t.date} | ${t.category}</div>
+                                    <div style="font-size: 11px; opacity: 0.6;">${new Date(t.date).toLocaleDateString('it-IT')} | ${t.category}</div>
                                 </div>
                                 <div style="text-align: right; margin: 0 15px;">
                                     <div style="font-weight: 700; color: ${t.amount > 0 ? 'var(--accent-success)' : '#fff'};">€ ${Math.abs(t.amount).toFixed(2)}</div>
@@ -1987,7 +2177,7 @@
         }
 
         async function removeTransactionFromTravel(travelId, transactionId) {
-            if (!confirm('Rimuovere questa transazione dal viaggio?')) return;
+            if (!await showConfirm('Rimuovere questa transazione dal viaggio?')) return;
             
             try {
                 const result = await apiCall(`/api/travels/${travelId}/transactions/${transactionId}`, {
@@ -2084,7 +2274,7 @@
         }
 
         async function deleteTravel(id) {
-            if (!confirm('Sei sicuro di voler eliminare questo viaggio? Le transazioni associate NON verranno eliminate.')) return;
+            if (!await showConfirm('Sei sicuro di voler eliminare questo viaggio?\n\nLe transazioni associate NON verranno eliminate.', { okLabel: 'Elimina', cancelLabel: 'Annulla' })) return;
             
             try {
                 const result = await apiCall(`/api/travels/${id}`, { method: 'DELETE' });
@@ -2267,7 +2457,7 @@
                         <div style="flex: 1;">
                             <div style="font-weight: bold; margin-bottom: 4px;">${trans.description}</div>
                             <div style="font-size: 12px; opacity: 0.7; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                                <span style="display:inline-flex;align-items:center;gap:4px;"><i data-lucide="calendar" style="width:14px;height:14px;"></i> ${trans.date}</span>
+                                <span style="display:inline-flex;align-items:center;gap:4px;"><i data-lucide="calendar" style="width:14px;height:14px;"></i> ${new Date(trans.date).toLocaleDateString('it-IT')}</span>
                                 <span>•</span>
                                 <span style="background: rgba(102, 126, 234, 0.2); padding: 2px 8px; border-radius: 10px; color: #667eea;">${trans.category}</span>
                                 ${!trans.isVerified ? `
@@ -2342,11 +2532,11 @@
         }
 
         async function resetDatabase() {
-            if (!confirm('⚠️ ATTENZIONE!\n\nSei sicuro di voler cancellare TUTTE le transazioni dal database?\n\nQuesta operazione NON può essere annullata!')) {
+            if (!await showConfirm('⚠️ ATTENZIONE!\n\nSei sicuro di voler cancellare TUTTE le transazioni dal database?\n\nQuesta operazione NON può essere annullata!', { okLabel: 'Continua', cancelLabel: 'Annulla' })) {
                 return;
             }
-            
-            if (!confirm('🚨 ULTIMA CONFERMA\n\nStai per eliminare definitivamente tutto il database.\n\nConfermi?')) {
+
+            if (!await showConfirm('🚨 ULTIMA CONFERMA\n\nStai per eliminare definitivamente tutto il database.\n\nConfermi?', { okLabel: 'Elimina tutto', cancelLabel: 'Annulla' })) {
                 return;
             }
             
@@ -2676,9 +2866,13 @@
             try {
                 console.log('✅ Caricamento dati iniziali post-login');
                 
-                // Fetch principali per popolare la dashboard
-                if (typeof updateStatsFromAPI === 'function') await updateStatsFromAPI();
-                if (typeof updateTransactionsFromAPI === 'function') await updateTransactionsFromAPI();
+                // Imposta il filtro predefinito (ultimi 30gg) e aggiorna i display custom
+                if (typeof applyLast30DaysFilter === 'function') {
+                    await applyLast30DaysFilter();
+                } else {
+                    if (typeof updateStatsFromAPI === 'function') await updateStatsFromAPI();
+                    if (typeof updateTransactionsFromAPI === 'function') await updateTransactionsFromAPI();
+                }
                 
                 if (typeof loadTravels === 'function') {
                     loadTravels();
@@ -3047,7 +3241,7 @@
 
             try {
                 const token = getAuthToken();
-                const response = await fetch('/api/auth/profile/avatar', {
+                const response = await fetch(API_BASE + '/api/auth/profile/avatar', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: formData

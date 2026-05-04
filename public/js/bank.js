@@ -54,7 +54,7 @@ async function showBankSelector() {
         }
 
         // 1. Chiedi al backend un Link Token
-        const response = await fetch('/api/bank/create-link-token', {
+        const response = await fetch(API_BASE + '/api/bank/create-link-token', {
             method: 'POST',
             headers: { 
                 'Authorization': `Bearer ${token}`,
@@ -78,7 +78,7 @@ async function showBankSelector() {
                     showMessage('🔗 Connessione riuscita, salvataggio dati...', 'info');
                     
                     // 3. Invia public_token al nostro backend per ottenere access_token
-                    const exchangeRes = await fetch('/api/bank/exchange-public-token', {
+                    const exchangeRes = await fetch(API_BASE + '/api/bank/exchange-public-token', {
                         method: 'POST',
                         headers: { 
                             'Authorization': `Bearer ${token}`,
@@ -96,7 +96,7 @@ async function showBankSelector() {
                         showMessage('🏦 Banca collegata! Avvio prima sincronizzazione...', 'info');
                         await loadBankAccounts();
                         // Auto-sync: recupera subito i movimenti per i nuovi conti
-                        const accountsRes = await fetch('/api/bank/accounts', { headers: { 'Authorization': `Bearer ${token}` } });
+                        const accountsRes = await fetch(API_BASE + '/api/bank/accounts', { headers: { 'Authorization': `Bearer ${token}` } });
                         const accountsData = await accountsRes.json();
                         if (accountsData.success) {
                             const newAccounts = accountsData.data.filter(a => !a.lastSync);
@@ -141,7 +141,7 @@ async function loadBankAccounts() {
 
     try {
         const token = getAuthToken();
-        const response = await fetch('/api/bank/accounts', {
+        const response = await fetch(API_BASE + '/api/bank/accounts', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
@@ -321,7 +321,7 @@ function renderAccountCard(acc) {
  * Scollega definitivamente una banca
  */
 async function disconnectConnection(connectionId, btn) {
-    if (!confirm('Sei sicuro? Questa azione scollegherà la banca e cancellerà definitivamente il collegamento da Plaid. (Le transazioni scaricate resteranno)')) {
+    if (!await showConfirm('Sei sicuro?\n\nQuesta azione scollegherà la banca e cancellerà definitivamente il collegamento da Plaid.\n\nLe transazioni scaricate resteranno.', { okLabel: 'Scollega', cancelLabel: 'Annulla' })) {
         return;
     }
 
@@ -332,7 +332,7 @@ async function disconnectConnection(connectionId, btn) {
         
         try {
             const token = getAuthToken();
-            const response = await fetch(`/api/bank/connections/${connectionId}`, {
+            const response = await fetch(API_BASE + `/api/bank/connections/${connectionId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -375,7 +375,7 @@ async function toggleAccountVisibility(accountId, btn) {
                     return;
                 }
                 
-                await fetch(`/api/bank/accounts/${accountId}/toggle`, {
+                await fetch(API_BASE + `/api/bank/accounts/${accountId}/toggle`, {
                     method: 'PATCH',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -386,7 +386,7 @@ async function toggleAccountVisibility(accountId, btn) {
                     showMessage('✅ Conto abilitato in stato "Pronto"', 'success');
                 }
             } else {
-                await fetch(`/api/bank/accounts/${accountId}/toggle`, {
+                await fetch(API_BASE + `/api/bank/accounts/${accountId}/toggle`, {
                     method: 'PATCH',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -458,7 +458,7 @@ async function syncAllConnectedAccounts(btn) {
         
         try {
             const token = getAuthToken();
-            const response = await fetch('/api/bank/accounts', {
+            const response = await fetch(API_BASE + '/api/bank/accounts', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -466,7 +466,7 @@ async function syncAllConnectedAccounts(btn) {
             if (data.success) {
                 const connectedAccounts = data.data.filter(a => a.isEnabled && a.isConnected);
                 const syncPromises = connectedAccounts.map(acc => 
-                    fetch(`/api/bank/sync/${acc.id}`, {
+                    fetch(API_BASE + `/api/bank/sync/${acc.id}`, {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${token}` }
                     })
@@ -508,7 +508,7 @@ async function syncAccount(accountId, btn) {
     
     try {
         const token = getAuthToken();
-        const response = await fetch(`/api/bank/sync/${accountId}`, {
+        const response = await fetch(API_BASE + `/api/bank/sync/${accountId}`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -562,7 +562,7 @@ async function syncAccount(accountId, btn) {
 async function startUpdateMode(accountId) {
     try {
         const token = getAuthToken();
-        const response = await fetch(`/api/bank/create-update-link-token/${accountId}`, {
+        const response = await fetch(API_BASE + `/api/bank/create-update-link-token/${accountId}`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -615,7 +615,7 @@ async function refreshAccountBalance(accountId, btn) {
 
     try {
         const token = getAuthToken();
-        const response = await fetch(`/api/bank/balance/${accountId}`, {
+        const response = await fetch(API_BASE + `/api/bank/balance/${accountId}`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` }
         });
