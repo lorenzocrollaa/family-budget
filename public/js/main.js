@@ -214,27 +214,47 @@
         }
 
         let _msgTimer = null;
+        function _dismissMessage() {
+            const messageEl = document.getElementById('message');
+            if (_msgTimer) { clearTimeout(_msgTimer); _msgTimer = null; }
+            messageEl.classList.remove('visible');
+        }
+
+        // Swipe-to-dismiss
+        (function() {
+            let startY = 0, startX = 0;
+            const el = () => document.getElementById('message');
+            document.addEventListener('touchstart', e => {
+                if (!el().classList.contains('visible')) return;
+                startY = e.touches[0].clientY;
+                startX = e.touches[0].clientX;
+            }, { passive: true });
+            document.addEventListener('touchend', e => {
+                if (!el().classList.contains('visible')) return;
+                const dy = e.changedTouches[0].clientY - startY;
+                const dx = Math.abs(e.changedTouches[0].clientX - startX);
+                if (dy < -30 && dx < 60) _dismissMessage(); // swipe up
+            }, { passive: true });
+        })();
+
         function showMessage(text, type) {
-            const svgMap = {
-                'success': '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
-                'error':   '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
-                'warning': '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
-                'info':    '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
-            };
+            const dotColors = { success: '#059669', error: '#f43f5e', warning: '#f59e0b', info: '#0ea5e9' };
+            const symbols  = { success: '✓', error: '✕', warning: '!', info: 'i' };
+            const color = dotColors[type] || dotColors.info;
+            const sym   = symbols[type]  || symbols.info;
+
+            const icon = `<span style="flex-shrink:0;width:22px;height:22px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;line-height:1;">${sym}</span>`;
 
             const messageEl = document.getElementById('message');
             if (_msgTimer) { clearTimeout(_msgTimer); _msgTimer = null; }
 
-            messageEl.innerHTML = `${svgMap[type] || svgMap['info']} <span style="white-space:pre-line;display:block;">${text}</span>`;
+            messageEl.innerHTML = `${icon}<span style="white-space:pre-line;display:block;flex:1;">${text}</span>`;
             messageEl.className = 'message ' + type;
 
-            // Mostra con GPU transition — nessun display toggle, nessun reflow
             requestAnimationFrame(() => messageEl.classList.add('visible'));
 
             const duration = text.length > 60 ? 6000 : 3000;
-            _msgTimer = setTimeout(() => {
-                messageEl.classList.remove('visible');
-            }, duration);
+            _msgTimer = setTimeout(_dismissMessage, duration);
         }
 
         function getAuthToken() {
