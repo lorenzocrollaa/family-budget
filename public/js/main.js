@@ -1975,15 +1975,13 @@
 
         function switchTab(tabName) {
             console.log('🔄 Switching to tab:', tabName);
-            
-            // ✅ Nascondi TUTTE le tab
+
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
                 content.style.display = 'none';
             });
 
-            // ✅ Mostra SOLO la tab selezionata
             const targetTab = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
             const targetContent = document.getElementById(tabName + 'Tab');
 
@@ -1991,25 +1989,32 @@
             if (targetContent) {
                 targetContent.classList.add('active');
                 targetContent.style.display = 'block';
+                // Defer rendering al frame successivo: il browser disegna il tab
+                // visibile prima di eseguire JS pesante (grafici, API calls)
+                requestAnimationFrame(() => _onTabVisible(tabName));
+                return;
             }
+        }
 
-            // ✅ GESTISCI TUTTI GLI ELEMENTI DB ADMIN - Mostra SOLO quando sei su DB Admin
+        function _onTabVisible(tabName) {
+
             const adminFilters = document.getElementById('adminFiltersSection');
             const adminList = document.getElementById('adminTransactionsList');
             const adminPagination = document.getElementById('adminPagination');
-            
+            if (adminFilters) adminFilters.style.display = 'none';
+            if (adminList) adminList.style.display = 'none';
+            if (adminPagination) adminPagination.style.display = 'none';
+        }
+
+        function _onTabVisible(tabName) {
+            const adminFilters = document.getElementById('adminFiltersSection');
+            const adminList = document.getElementById('adminTransactionsList');
+
             if (tabName === 'database') {
-                // Mostra tutto il DB Admin
                 if (adminFilters) adminFilters.style.display = 'block';
                 if (adminList) adminList.style.display = 'block';
                 populateAdminCategoryFilter();
-                // 🆕 Carica statistiche Google Places
                 loadGooglePlacesStats();
-            } else {
-                // Nascondi tutto il DB Admin
-                if (adminFilters) adminFilters.style.display = 'none';
-                if (adminList) adminList.style.display = 'none';
-                if (adminPagination) adminPagination.style.display = 'none';
             }
 
             if (tabName === 'categories') {
@@ -2021,20 +2026,24 @@
             }
 
             if (tabName === 'analysis') {
-                // Se abbiamo già dati cached, li mostriamo subito senza aspettare l'API
                 if (typeof analysisMonthlyData !== 'undefined' && analysisMonthlyData.length > 0) {
                     renderOverviewChart();
                     renderCurrentMonth();
-                    loadAnalysisData(); // aggiorna in background silenziosamente
+                    loadAnalysisData();
                 } else {
                     loadAnalysisData();
                 }
             }
-            
+
             if (tabName === 'travel') {
-                loadTravels();
+                // Mostra subito i viaggi cached, aggiorna in background
+                if (appData.travels && appData.travels.length > 0) {
+                    renderTravels();
+                    loadTravels();
+                } else {
+                    loadTravels();
+                }
             }
-            
 
             if (tabName === 'upload') {
                 clearUploadHistory();
