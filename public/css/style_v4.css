@@ -590,22 +590,27 @@ input:focus, select:focus {
 
 .tabs {
     position: fixed;
-    bottom: calc(env(safe-area-inset-bottom) + 16px);
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 0; /* Aderisce al fondo su mobile */
+    left: 0;
+    right: 0;
     display: flex;
     background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-glass-light);
-    border-radius: var(--radius-pill);
-    padding: 8px;
-    padding-bottom: 8px;
-    gap: 8px;
-    box-shadow: var(--shadow-soft), 0 0 0 1px rgba(255,255,255,0.05);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid var(--border-glass-light);
+    padding: 10px 8px calc(env(safe-area-inset-bottom, 15px) + 8px) 8px;
+    gap: 2px;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
     z-index: 1000;
-    width: auto;
-    max-width: 95%;
+    justify-content: space-around;
+    width: 100%;
+}
+
+/* Effetto contorno acceso per tema chiaro */
+[data-theme="light"] .tabs {
+    background: rgba(255, 255, 255, 0.85);
+    border-top: 1.5px solid var(--accent-primary);
+    box-shadow: 0 -2px 15px rgba(99, 102, 241, 0.15);
 }
 
 .tab {
@@ -710,9 +715,10 @@ input:focus, select:focus {
 /* Upload Area */
 .upload-area {
     background: var(--bg-glass);
-    border: 2px dashed var(--border-glass-light);
-    border-radius: var(--radius-lg);
-    padding: 48px 24px;
+    border: 2px dashed var(--accent-primary); /* Bordo più visibile */
+    border-radius: 30px; /* Più arrotondato per iOS */
+    padding: 40px 20px;
+    margin: 0 16px; /* Spazio dai bordi dello schermo */
     text-align: center;
     cursor: pointer;
     transition: var(--transition-smooth);
@@ -720,6 +726,7 @@ input:focus, select:focus {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    opacity: 0.9;
 }
 
 .upload-area:hover {
@@ -862,31 +869,44 @@ input:focus, select:focus {
     right: 24px;
     padding: 16px 24px;
     border-radius: var(--radius-lg);
-    color: var(--text-main); /* Adattabile al tema */
+    color: white !important;
     font-weight: 600;
-    z-index: 9999;
-    background: var(--bg-card); /* Adattabile al tema */
+    z-index: 99999 !important;
+    background: rgba(15, 23, 42, 0.95) !important;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-glass-light);
-    box-shadow: var(--shadow-premium);
-    display: none;
-    animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid var(--accent-primary);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: flex;
     align-items: center;
     gap: 12px;
+    will-change: transform, opacity;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(-16px);
+    transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.message.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
 }
 
 @media (max-width: 768px) {
     .message {
         left: 50% !important;
         right: auto !important;
-        transform: translateX(-50%) !important;
         top: calc(env(safe-area-inset-top) + 12px) !important;
         width: 90% !important;
         max-width: 400px;
-        animation: fadeIn 0.4s ease-out;
         justify-content: center;
         text-align: center;
+        transform: translateX(-50%) translateY(-16px);
+        transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .message.visible {
+        transform: translateX(-50%) translateY(0);
     }
 }
 
@@ -927,6 +947,21 @@ input:focus, select:focus {
     to { opacity: 1; transform: translateX(0); }
 }
 
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+.btn-error-shake {
+    animation: shake 0.2s ease-in-out 0s 2;
+    background: var(--accent-danger) !important;
+}
+
+.message {
+    z-index: 20000 !important; /* Deve stare sopra al login modal */
+}
+
 /* Category Grid */
 #categoriesGrid {
     display: grid;
@@ -955,13 +990,16 @@ input:focus, select:focus {
 /* Responsive & Emulator Logic */
 @media (max-width: 768px), body.is-mobile-emulated {
     /* Professional Standard Navbar */
+    /* Professional Standard Navbar */
     .tabs {
+        bottom: 0;
+        left: 0;
+        right: 0;
         width: 100%;
-        min-height: 70px; /* Standard bottom bar height */
-        padding: 8px 16px 16px 16px; /* Extra bottom padding for safe area */
-        justify-content: space-between;
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+        border-radius: 0; /* Su mobile meglio piatta al fondo */
+        padding: 10px 10px calc(env(safe-area-inset-bottom, 15px) + 10px) 10px;
+        justify-content: space-around;
+        gap: 0;
     }
     
     .tab {
@@ -1268,42 +1306,65 @@ input:focus, select:focus {
 /* Bulk Edit Floating Action Bar */
 .bulk-action-bar {
     position: fixed;
-    bottom: -120px;
+    bottom: -200px;
     left: 50%;
     transform: translateX(-50%);
     background: var(--bg-card);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--accent-primary);
-    border-radius: var(--radius-pill);
-    padding: 14px 28px;
+    border-radius: 28px;
+    padding: 16px;
     display: flex;
+    flex-direction: column; /* Due piani */
     align-items: center;
-    gap: 20px;
+    gap: 12px;
     box-shadow: var(--shadow-premium), 0 0 40px var(--accent-primary-glow);
     z-index: 9000;
     transition: bottom 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    width: 92%;
+    max-width: 400px;
 }
 
 .bulk-action-bar.visible {
-    bottom: 30px;
+    bottom: calc(20px + env(safe-area-inset-bottom, 15px));
+}
+
+.bulk-action-buttons {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.bulk-action-bar .btn {
+    flex: 1; /* Pulsanti uguali e larghi */
+    padding: 10px 5px;
+    font-size: 10px;
+    height: 44px;
+    border-radius: 16px;
+    text-transform: uppercase;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 }
 
 .bulk-count {
     color: var(--text-main);
     font-weight: 700;
-    font-size: 15px;
+    font-size: 14px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .bulk-count .badge {
     background: var(--accent-primary);
     color: white;
     padding: 2px 10px;
-    border-radius: 12px;
-    font-size: 13px;
+    border-radius: 10px;
+    font-size: 12px;
     font-weight: 800;
 }
 
@@ -1323,16 +1384,25 @@ input:focus, select:focus {
 .category-option {
     background: var(--bg-glass);
     border: 1px solid var(--border-glass-light);
-    border-radius: 12px;
-    padding: 14px;
+    border-radius: 16px;
+    padding: 12px 10px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--text-main);
+    min-height: 56px;
+    overflow: hidden;
+}
+
+.category-option span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
 }
 
 .category-option:hover {
@@ -1344,8 +1414,8 @@ input:focus, select:focus {
 
 .category-option-icon {
     background: rgba(var(--accent-primary-rgb), 0.15);
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -1355,9 +1425,22 @@ input:focus, select:focus {
 }
 
 .category-option i {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     color: var(--accent-primary);
+}
+
+/* Modal wider on mobile */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95% !important;
+        padding: 20px 16px !important;
+    }
+    
+    .category-selection-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
 }
 
 /* Checkbox Styles per transazioni */
@@ -2288,6 +2371,36 @@ body {
 
 /* Avatar */
 .avatar-wrapper img { width: 28px !important; height: 28px !important; }
+
+/* Date Filter Custom Display */
+.date-input-wrapper {
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 6px 12px;
+    min-width: 110px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.date-input-wrapper span {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.dfb-input-hidden {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0; /* Invisibile ma cliccabile */
+    cursor: pointer;
+}
 
 /* ── Date Filter Bar (new design) ── */
 .date-filter-bar {

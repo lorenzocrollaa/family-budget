@@ -227,23 +227,13 @@
 
             messageEl.innerHTML = `${svgMap[type] || svgMap['info']} <span style="white-space:pre-line;display:block;">${text}</span>`;
             messageEl.className = 'message ' + type;
-            messageEl.style.cssText = 'display:flex;align-items:flex-start;gap:12px;opacity:1;';
 
-            // Forza restart animazione CSS
-            void messageEl.offsetWidth;
-            messageEl.style.animation = 'none';
-            void messageEl.offsetWidth;
-            messageEl.style.animation = '';
+            // Mostra con GPU transition — nessun display toggle, nessun reflow
+            requestAnimationFrame(() => messageEl.classList.add('visible'));
 
             const duration = text.length > 60 ? 6000 : 3000;
             _msgTimer = setTimeout(() => {
-                messageEl.style.transition = 'opacity 0.3s ease';
-                messageEl.style.opacity = '0';
-                setTimeout(() => {
-                    messageEl.style.display = 'none';
-                    messageEl.style.opacity = '1';
-                    messageEl.style.transition = '';
-                }, 300);
+                messageEl.classList.remove('visible');
             }, duration);
         }
 
