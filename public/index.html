@@ -1065,5 +1065,16 @@
             }
         });
     </script>
+
+    <!-- Category Focus Overlay -->
+    <div id="catFocusOverlay" onclick="window._catFocusClose && window._catFocusClose()"></div>
+    <div id="catFocusCard" onclick="window._catFocusOpen && window._catFocusOpen()">
+        <button id="catFocusCloseBtn" onclick="event.stopPropagation(); window._catFocusClose && window._catFocusClose()">×</button>
+        <div id="catFocusIcon"></div>
+        <div id="catFocusName"></div>
+        <div id="catFocusAmount"></div>
+        <div id="catFocusCount"></div>
+        <div id="catFocusHint">Tocca per vedere le spese</div>
+    </div>
 </body>
 </html>

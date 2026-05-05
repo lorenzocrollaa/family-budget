@@ -35,7 +35,74 @@
         var currentVerifyTransaction = null;
         var pieChartSlices = [];
         var selectedPieCategory = null;
-        var selectedCategoryCard = null;
+        var _catFocusCategory = null;
+        var _catFocusOriginRect = null;
+
+        window._catFocusOpen = function() {
+            if (!_catFocusCategory) return;
+            const cat = _catFocusCategory;
+            window._catFocusClose();
+            showCategoryDetails(cat);
+        };
+
+        window._catFocusClose = function() {
+            if (!_catFocusCategory) return;
+            _catFocusCategory = null;
+            const overlay = document.getElementById('catFocusOverlay');
+            const fc = document.getElementById('catFocusCard');
+            if (_catFocusOriginRect) {
+                fc.style.left  = `${_catFocusOriginRect.left}px`;
+                fc.style.top   = `${_catFocusOriginRect.top}px`;
+                fc.style.width = `${_catFocusOriginRect.width}px`;
+            }
+            fc.classList.remove('active');
+            overlay.classList.remove('active');
+            setTimeout(() => { fc.style.display = 'none'; _catFocusOriginRect = null; }, 440);
+        };
+
+        function _catFocusShow(card, categoryName, data) {
+            _catFocusCategory = categoryName;
+            const catColor = data.color || 'var(--accent-primary)';
+            const iconName = getCategoryIcon(categoryName);
+            const rect = card.getBoundingClientRect();
+            _catFocusOriginRect = rect;
+
+            document.getElementById('catFocusIcon').innerHTML = `<i data-lucide="${iconName}" style="width:44px;height:44px;color:${catColor};"></i>`;
+            document.getElementById('catFocusName').textContent = categoryName;
+            document.getElementById('catFocusName').style.color = catColor;
+            document.getElementById('catFocusAmount').textContent = formatAmount(data.amount);
+            document.getElementById('catFocusAmount').style.color = catColor;
+            document.getElementById('catFocusCount').textContent = `${data.count} transazioni`;
+
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const targetW = Math.min(300, vw * 0.82);
+            const targetX = (vw - targetW) / 2;
+            const targetY = vh * 0.28;
+
+            const fc = document.getElementById('catFocusCard');
+            const overlay = document.getElementById('catFocusOverlay');
+
+            fc.style.transition = 'none';
+            fc.style.display = 'block';
+            fc.style.left  = `${rect.left}px`;
+            fc.style.top   = `${rect.top}px`;
+            fc.style.width = `${rect.width}px`;
+            fc.classList.remove('active');
+
+            if (typeof refreshIcons === 'function') refreshIcons();
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    fc.style.transition = '';
+                    fc.style.left  = `${targetX}px`;
+                    fc.style.top   = `${targetY}px`;
+                    fc.style.width = `${targetW}px`;
+                    fc.classList.add('active');
+                    overlay.classList.add('active');
+                });
+            });
+        }
 
         function _pieReset() {
             if (!selectedPieCategory) return;
@@ -1453,17 +1520,7 @@
                 card.className = 'category-card';
                 card.dataset.category = categoryName;
                 card.onclick = () => {
-                    if (selectedCategoryCard === categoryName) {
-                        // Secondo tap → apre dettagli
-                        selectedCategoryCard = null;
-                        document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
-                        showCategoryDetails(categoryName);
-                    } else {
-                        // Primo tap → evidenzia
-                        selectedCategoryCard = categoryName;
-                        document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
-                        card.classList.add('selected');
-                    }
+                    _catFocusShow(card, categoryName, data);
                 };
                 
                 const catColor = data.color || '#f43f5e';
