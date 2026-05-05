@@ -924,37 +924,10 @@
             </button>
         </div>
 
-        <!-- ── Floating mini-profile (fuori dallo scroll area) ── -->
-        <div id="miniProfile" style="display:none;">
-            <button id="miniProfileBtn" onclick="toggleMiniProfile(event)" title="Account">
-                <img id="userAvatarImg" src="img/avatars/default.png" alt="Avatar">
-                <i data-lucide="chevron-down" style="width:11px;height:11px;opacity:0.55;"></i>
-            </button>
-            <div id="miniProfilePanel">
-                <!-- User name -->
-                <div class="mpp-user">
-                    <img class="mpp-avatar" id="userAvatarImgPanel" src="img/avatars/default.png" alt="">
-                    <span id="userDisplayName" class="mpp-name">Famiglia</span>
-                    <span id="planBadge" class="plan-badge plan-free" title="Clicca per gestire il piano">FREE</span>
-                </div>
-                <div class="mpp-divider"></div>
-                <!-- Dark/light toggle -->
-                <div class="mpp-row">
-                    <span class="mpp-row-lbl"><i data-lucide="moon" style="width:13px;height:13px;vertical-align:-2px;margin-right:5px;"></i>Tema scuro</span>
-                    <label class="theme-sw">
-                        <input type="checkbox" id="themeSwitchInput" onchange="onThemeSwitchChange(this)">
-                        <span class="theme-sw-track"><span class="theme-sw-knob"></span></span>
-                    </label>
-                </div>
-                <div class="mpp-divider"></div>
-                <div class="mpp-item" onclick="openAvatarModal(event)">
-                    <i data-lucide="user-cog" style="width:14px;height:14px;"></i> Cambia avatar
-                </div>
-                <div class="mpp-item danger" onclick="handleLogout()">
-                    <i data-lucide="log-out" style="width:14px;height:14px;"></i> Esci
-                </div>
-            </div>
-        </div>
+        <!-- themeSwitchInput kept hidden for JS compatibility -->
+        <input type="checkbox" id="themeSwitchInput" onchange="onThemeSwitchChange(this)" style="display:none;">
+        <span id="userDisplayName" style="display:none;"></span>
+        <span id="planBadge" class="plan-badge plan-free" style="display:none;"></span>
 
         </div> <!-- Chiude phone-screen-inner -->
     </div> <!-- Chiude phoneShell -->

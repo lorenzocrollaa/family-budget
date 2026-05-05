@@ -280,22 +280,7 @@
         function onThemeSwitchChange(el) { setTheme(el.checked ? 'dark' : 'light'); }
         window.onThemeSwitchChange = onThemeSwitchChange;
 
-        function toggleMiniProfile(event) {
-            if (event) event.stopPropagation();
-            const panel = document.getElementById('miniProfilePanel');
-            if (!panel) return;
-            panel.classList.toggle('open');
-            if (panel.classList.contains('open')) {
-                const close = (e) => {
-                    if (!document.getElementById('miniProfile').contains(e.target)) {
-                        panel.classList.remove('open');
-                        document.removeEventListener('click', close);
-                    }
-                };
-                setTimeout(() => document.addEventListener('click', close), 10);
-            }
-        }
-        window.toggleMiniProfile = toggleMiniProfile;
+        window.toggleMiniProfile = function() {};
 
         function initTheme() {
             const saved = localStorage.getItem('theme_preference');
@@ -620,7 +605,7 @@
             document.getElementById('authScreen').style.display = 'none';
             document.getElementById('appContainer').style.display = 'block';
             document.getElementById('appTabBar').style.display = 'flex';
-            document.getElementById('miniProfile').style.display = 'block';
+            
 
             if(authResolve) {
                 const token = getAuthToken();
@@ -668,8 +653,6 @@
 
         function handleLogout() {
             stopCoinBursts();
-            document.getElementById('miniProfilePanel')?.classList.remove('open');
-            document.getElementById('miniProfile').style.display = 'none';
             localStorage.removeItem('authToken');
             currentUser = null;
             window.location.reload();
@@ -3019,7 +3002,7 @@
                 document.getElementById('authScreen').style.display = 'none';
                 document.getElementById('appContainer').style.display = 'block';
                 document.getElementById('appTabBar').style.display = 'flex';
-                document.getElementById('miniProfile').style.display = 'block';
+                
 
                 await initializeApplicationData();
             } catch (error) {
@@ -3343,7 +3326,7 @@
 
         function openAvatarModal(event) {
             if (event) event.stopPropagation();
-            document.getElementById('miniProfilePanel')?.classList.remove('open');
+            
             
             const modal = document.getElementById('avatarModal');
             const grid = document.getElementById('avatarGrid');
