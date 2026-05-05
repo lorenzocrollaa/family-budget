@@ -2205,9 +2205,8 @@
 
             if (tabName === 'analysis') {
                 if (typeof analysisMonthlyData !== 'undefined' && analysisMonthlyData.length > 0) {
-                    renderOverviewChart();
                     renderCurrentMonth();
-                    loadAnalysisData();
+                    if (!analysisOverviewChartInst) renderOverviewChart();
                 } else {
                     loadAnalysisData();
                 }
@@ -3178,8 +3177,6 @@
         function renderOverviewChart() {
             const canvas = document.getElementById('analysisOverviewChart');
             if (!canvas) return;
-            if (analysisOverviewChartInst) analysisOverviewChartInst.destroy();
-
             Chart.defaults.color = isDarkMode() ? '#94a3b8' : '#1e293b';
             Chart.defaults.font.family = "'Inter', sans-serif";
 
@@ -3191,6 +3188,14 @@
                 const [y, mo] = m.month.split('-');
                 return new Date(parseInt(y), parseInt(mo)-1, 1).toLocaleString('it-IT', { month: 'short'}).toUpperCase() + ' ' + y;
             });
+
+            if (analysisOverviewChartInst) {
+                analysisOverviewChartInst.data.labels = labels;
+                analysisOverviewChartInst.data.datasets[0].data = analysisMonthlyData.map(m => m.income);
+                analysisOverviewChartInst.data.datasets[1].data = analysisMonthlyData.map(m => m.expenses);
+                analysisOverviewChartInst.update('none');
+                return;
+            }
 
             analysisOverviewChartInst = new Chart(canvas, {
                 type: 'bar',
@@ -3262,9 +3267,16 @@
         function renderCategoryBarChart(monthData) {
             const canvas = document.getElementById('analysisCategoryChart');
             if (!canvas) return;
-            if (analysisCategoryChartInst) analysisCategoryChartInst.destroy();
 
             const categories = monthData.categories.slice(0, 15); // Show top 15
+
+            if (analysisCategoryChartInst) {
+                analysisCategoryChartInst.data.labels = categories.map(c => c.name);
+                analysisCategoryChartInst.data.datasets[0].data = categories.map(c => c.amount);
+                analysisCategoryChartInst.data.datasets[0].backgroundColor = categories.map(c => c.color || '#6366f1');
+                analysisCategoryChartInst.update('none');
+                return;
+            }
             
             Chart.defaults.color = isDarkMode() ? '#94a3b8' : '#1e293b';
             Chart.defaults.font.family = "'Inter', sans-serif";
