@@ -2410,7 +2410,7 @@
                         <div class="tab-empty-sub">Crea il tuo primo viaggio per raggruppare le spese</div>
                     </div>
                 `;
-                setTimeout(refreshIcons, 50);
+                refreshIcons();
                 return;
             }
 
@@ -3077,10 +3077,9 @@
         async function loadAnalysisData() {
         window.loadAnalysisData = loadAnalysisData;
 
-            document.getElementById('analysisEmptyState').style.display = 'none';
-            // Mostra skeleton solo se non abbiamo ancora dati
             const hasCache = typeof analysisMonthlyData !== 'undefined' && analysisMonthlyData.length > 0;
             if (!hasCache) {
+                document.getElementById('analysisEmptyState').style.display = 'block';
                 document.getElementById('analysisContent').style.display = 'none';
             }
 
