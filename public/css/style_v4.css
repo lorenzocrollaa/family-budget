@@ -3476,3 +3476,61 @@ body {
     border-radius: 10px;
     padding: 10px 16px;
 }
+
+/* ── Disabilita hover su touch (previene "sticky hover" durante scroll) ── */
+@media (hover: none) and (pointer: coarse) {
+    .card:hover {
+        border-color: var(--border-glass);
+        background: var(--bg-card);
+        transform: none;
+        box-shadow: var(--shadow-soft);
+    }
+    .stat-card:hover {
+        transform: none;
+        background: var(--bg-card);
+        border-color: var(--border-glass);
+    }
+    .transaction-item:hover,
+    .transaction-item-v2:hover {
+        background: var(--bg-card);
+        border-color: var(--border-glass);
+        transform: none;
+        box-shadow: none;
+    }
+    .category-card:hover {
+        background: var(--bg-card);
+        border-color: var(--border-glass);
+        transform: none;
+        box-shadow: var(--shadow-soft);
+    }
+    .bank-account-card:hover {
+        transform: none;
+        border-color: var(--border-glass);
+        box-shadow: none;
+        background: var(--bg-card);
+    }
+    .mini-insights-card:hover {
+        border-color: var(--border-glass);
+        background: var(--bg-card);
+    }
+    .wallet-card:hover {
+        border-color: transparent;
+    }
+    .tab:hover,
+    .tab.tab-upload:hover {
+        background: transparent;
+        transform: none;
+    }
+    .btn:hover,
+    .filter-btn:hover,
+    .an-nav-btn:hover,
+    .an-action-btn:hover {
+        transform: none;
+        background: inherit;
+        box-shadow: none;
+    }
+    .dropdown-item:hover {
+        background: transparent;
+        color: inherit;
+    }
+}
