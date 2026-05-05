@@ -2167,21 +2167,9 @@
             if (targetContent) {
                 targetContent.classList.add('active');
                 targetContent.style.display = 'block';
-                // Defer rendering al frame successivo: il browser disegna il tab
-                // visibile prima di eseguire JS pesante (grafici, API calls)
-                requestAnimationFrame(() => _onTabVisible(tabName));
+                _onTabVisible(tabName);
                 return;
             }
-        }
-
-        function _onTabVisible(tabName) {
-
-            const adminFilters = document.getElementById('adminFiltersSection');
-            const adminList = document.getElementById('adminTransactionsList');
-            const adminPagination = document.getElementById('adminPagination');
-            if (adminFilters) adminFilters.style.display = 'none';
-            if (adminList) adminList.style.display = 'none';
-            if (adminPagination) adminPagination.style.display = 'none';
         }
 
         function _onTabVisible(tabName) {
@@ -2196,24 +2184,22 @@
             }
 
             if (tabName === 'categories') {
-                drawPieChart(); drawMiniCharts();
+                requestAnimationFrame(() => { drawPieChart(); drawMiniCharts(); });
             }
 
             if (tabName === 'home') {
-                drawMiniCharts();
+                requestAnimationFrame(() => drawMiniCharts());
             }
 
             if (tabName === 'analysis') {
                 if (typeof analysisMonthlyData !== 'undefined' && analysisMonthlyData.length > 0) {
-                    renderCurrentMonth();
-                    if (!analysisOverviewChartInst) renderOverviewChart();
+                    requestAnimationFrame(() => { renderCurrentMonth(); if (!analysisOverviewChartInst) renderOverviewChart(); });
                 } else {
                     loadAnalysisData();
                 }
             }
 
             if (tabName === 'travel') {
-                // Mostra subito i viaggi cached, aggiorna in background
                 if (appData.travels && appData.travels.length > 0) {
                     renderTravels();
                     loadTravels();
@@ -2224,9 +2210,6 @@
 
             if (tabName === 'upload') {
                 clearUploadHistory();
-                // ✅ NON resettare lastUploadedFileId qui, altrimenti si perde il focus sul file appena caricato
-                // lastUploadedFileId = null;
-                // lastUploadedFileName = null;
                 document.getElementById('transactionsTitle').textContent = 'Pronto per nuovo caricamento';
             }
         }
