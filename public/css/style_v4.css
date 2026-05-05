@@ -590,7 +590,7 @@ input:focus, select:focus {
 
 .tabs {
     position: fixed;
-    bottom: 0; /* Aderisce al fondo su mobile */
+    bottom: 0;
     left: 0;
     right: 0;
     display: flex;
@@ -598,7 +598,7 @@ input:focus, select:focus {
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border-top: 1px solid var(--border-glass-light);
-    padding: 10px 8px calc(env(safe-area-inset-bottom, 15px) + 8px) 8px;
+    padding: 14px 8px calc(env(safe-area-inset-bottom, 16px) + 10px) 8px;
     gap: 2px;
     box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
     z-index: 1000;
@@ -617,7 +617,7 @@ input:focus, select:focus {
     background: transparent;
     color: var(--text-muted);
     border: none;
-    padding: 12px 20px;
+    padding: 14px 20px;
     border-radius: var(--radius-pill);
     font-size: 13px;
     font-weight: 600;
@@ -625,7 +625,7 @@ input:focus, select:focus {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
     transition: var(--transition-smooth);
     min-width: 80px;
 }
@@ -3533,4 +3533,23 @@ body {
         background: transparent;
         color: inherit;
     }
+}
+
+/* ── Feedback visivo al tap (funziona su touch) ── */
+#pieCenterBtn:active {
+    background: #818cf8;
+    transform: scale(0.93);
+    transition: transform 0.08s ease, background 0.08s ease;
+}
+
+#catFocusHint:active {
+    background: rgba(99,102,241,0.28);
+    border-color: rgba(99,102,241,0.7);
+    transform: scale(0.97);
+    transition: transform 0.08s ease, background 0.08s ease;
+}
+
+#catFocusCard:active {
+    transform: scale(0.98);
+    transition: transform 0.08s ease;
 }
