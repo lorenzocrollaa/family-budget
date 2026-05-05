@@ -55,25 +55,30 @@
         }
 
         window._catFocusOpen = function() {
-            if (!_catFocusCategory) return;
             const cat = _catFocusCategory;
-            showCategoryDetails(cat);
-            window._catFocusClose();
+            if (!cat) return;
+            _catFocusCategory = null;
+            _doCloseFocusCard();
+            setTimeout(() => showCategoryDetails(cat), 80);
         };
 
-        window._catFocusClose = function() {
-            if (!_catFocusCategory) return;
-            _catFocusCategory = null;
+        function _doCloseFocusCard() {
             const overlay = document.getElementById('catFocusOverlay');
             const fc = document.getElementById('catFocusCard');
+            if (!fc || !fc.classList.contains('active')) return;
             if (_catFocusOriginRect) {
                 fc.style.left  = `${_catFocusOriginRect.left}px`;
                 fc.style.top   = `${_catFocusOriginRect.top}px`;
                 fc.style.width = `${_catFocusOriginRect.width}px`;
             }
             fc.classList.remove('active');
-            overlay.classList.remove('active');
+            if (overlay) overlay.classList.remove('active');
             setTimeout(() => { fc.style.display = 'none'; _catFocusOriginRect = null; }, 440);
+        }
+
+        window._catFocusClose = function() {
+            _catFocusCategory = null;
+            _doCloseFocusCard();
         };
 
         function _catFocusShow(card, categoryName, data) {
@@ -147,14 +152,12 @@
 
         // Collega i tap istantanei (no 300ms delay) agli elementi overlay
         (function() {
-            const fc       = document.getElementById('catFocusCard');
             const overlay  = document.getElementById('catFocusOverlay');
             const closeBtn = document.getElementById('catFocusCloseBtn');
             const hint     = document.getElementById('catFocusHint');
             const pieBtn   = document.getElementById('pieCenterBtn');
 
-            if (hint) _fastTap(hint, (e) => { e.stopPropagation(); window._catFocusOpen && window._catFocusOpen(); });
-            if (fc) _fastTap(fc, () => { window._catFocusOpen && window._catFocusOpen(); });
+            if (hint) _fastTap(hint, () => { window._catFocusOpen && window._catFocusOpen(); });
             if (overlay) _fastTap(overlay, () => { window._catFocusClose && window._catFocusClose(); });
             if (closeBtn) _fastTap(closeBtn, (e) => { e.stopPropagation(); window._catFocusClose && window._catFocusClose(); });
             if (pieBtn) _fastTap(pieBtn, () => { window._pieOpenCategory && window._pieOpenCategory(); });
