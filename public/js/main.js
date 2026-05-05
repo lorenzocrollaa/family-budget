@@ -145,30 +145,6 @@
             if (!e.target.closest('#pieCenterInfo')) _pieReset();
         }, { passive: true });
 
-        // Swipe orizzontale per cambiare tab
-        const SWIPE_TABS = ['home', 'analysis', 'categories', 'travel', 'bank', 'database'];
-        let _swipeX = 0, _swipeY = 0;
-        document.addEventListener('touchstart', (e) => {
-            _swipeX = e.touches[0].clientX;
-            _swipeY = e.touches[0].clientY;
-        }, { passive: true });
-        document.addEventListener('touchend', (e) => {
-            // Non attivare se c'è un modal aperto o focus card attiva
-            if (_catFocusCategory) return;
-            if (document.querySelector('.modal[style*="block"]')) return;
-            const dx = e.changedTouches[0].clientX - _swipeX;
-            const dy = e.changedTouches[0].clientY - _swipeY;
-            if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.8) return;
-            // Trova il tab corrente
-            const activeBtn = document.querySelector('.tab.active');
-            if (!activeBtn) return;
-            const m = (activeBtn.getAttribute('onclick') || '').match(/switchTab\('(.+?)'\)/);
-            if (!m) return;
-            const idx = SWIPE_TABS.indexOf(m[1]);
-            if (idx < 0) return;
-            if (dx < 0 && idx < SWIPE_TABS.length - 1) switchTab(SWIPE_TABS[idx + 1]);
-            else if (dx > 0 && idx > 0) switchTab(SWIPE_TABS[idx - 1]);
-        }, { passive: true });
         // Collega i tap istantanei (no 300ms delay) agli elementi overlay
         (function() {
             const fc       = document.getElementById('catFocusCard');
