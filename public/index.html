@@ -438,12 +438,10 @@
                 <input type="checkbox" id="uploadAsMemory" style="display:none;">
 
                 <!-- Loading Spinner & Progress (Nascosti di default) -->
-                <div id="uploadSkeleton" class="skeleton-container" style="display: none; min-height: 250px; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.2); border-radius: 16px; border: 1px dashed var(--border-glass-light);">
-                    <div class="spinner-wheel" style="margin-bottom: 20px;"></div>
-                    <div style="font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 10px;">Elaborazione In Corso...</div>
-                    <div style="color: var(--text-muted); font-size: 14px; max-width: 300px;" id="skeletonText">L'AI sta analizzando i tuoi movimenti bancari, assegnando categorie intelligenti. Attendi qualche istante.</div>
-                    
-                    <div style="width: 80%; background: rgba(255,255,255,0.1); height: 6px; border-radius: 10px; margin-top: 25px; overflow: hidden; position: relative;">
+                <div id="uploadSkeleton" class="skeleton-container" style="display: none; min-height: 200px; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.2); border-radius: 16px; border: 1px dashed var(--border-glass-light);">
+                    <div style="font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">Elaborazione In Corso...</div>
+                    <div style="color: var(--text-muted); font-size: 14px; max-width: 300px; text-align:center;" id="skeletonText">L'AI sta analizzando i tuoi movimenti bancari, assegnando categorie intelligenti. Attendi qualche istante.</div>
+                    <div style="width: 80%; background: rgba(255,255,255,0.1); height: 6px; border-radius: 10px; margin-top: 14px; overflow: hidden; position: relative;">
                         <div class="progress-bar-fill"></div>
                     </div>
                 </div>
