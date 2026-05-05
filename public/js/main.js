@@ -1936,10 +1936,9 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     cutout: '75%',
+                    layout: { padding: 40 }, // spazio fisso per pop-out — impedisce al grafico di rimpicciolirsi
                     plugins: {
-                        legend: {
-                            display: false
-                        },
+                        legend: { display: false },
                         tooltip: { enabled: false }
                     },
                     onClick: (event, elements) => {
@@ -1968,7 +1967,7 @@
                                 // Primo tap → spicchio esce, centro pulito
                                 selectedPieCategory = categoryName;
                                 const catData = appData.categories[categoryName];
-                                const offsets = labels.map((_, i) => i === index ? 32 : 0);
+                                const offsets = labels.map((_, i) => i === index ? 40 : 0);
                                 chartInstance.data.datasets[0].offset = offsets;
                                 chartInstance.update('none');
                                 if (inner) {
@@ -1989,6 +1988,26 @@
                     }
                 }
             });
+
+            // Reset automatico quando il dito esce dal canvas
+            canvas.addEventListener('touchend', (e) => {
+                if (!selectedPieCategory) return;
+                const touch = e.changedTouches[0];
+                const rect = canvas.getBoundingClientRect();
+                const inside = touch.clientX >= rect.left && touch.clientX <= rect.right &&
+                               touch.clientY >= rect.top  && touch.clientY <= rect.bottom;
+                if (!inside) {
+                    selectedPieCategory = null;
+                    chartInstance.data.datasets[0].offset = 0;
+                    chartInstance.update('none');
+                    const labelEl = document.getElementById('pieCenterLabel');
+                    const hintEl  = document.getElementById('pieCenterHint');
+                    const innerEl = document.getElementById('pieCenterAmountInner');
+                    if (innerEl) { innerEl.textContent = fmtTotal; innerEl.style.color = 'var(--text-main)'; }
+                    if (labelEl) { labelEl.textContent = 'TOTALE'; }
+                    if (hintEl)  { hintEl.style.display = 'none'; }
+                }
+            }, { passive: true });
         }
 
         function getCategoryIcon(category) {
