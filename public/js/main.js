@@ -41,8 +41,8 @@
         window._catFocusOpen = function() {
             if (!_catFocusCategory) return;
             const cat = _catFocusCategory;
-            window._catFocusClose();
-            showCategoryDetails(cat);
+            showCategoryDetails(cat);   // apre subito
+            window._catFocusClose();    // chiude overlay in background
         };
 
         window._catFocusClose = function() {
@@ -1549,28 +1549,29 @@
 
         async function showCategoryDetails(categoryName) {
             try {
-                // ✅ Usa il nuovo endpoint /category-details
+                // Apri il modale subito con loader — nessun lag percepito
+                currentModalCategory = categoryName;
+                document.getElementById('modalCategoryTitle').innerHTML = `<div style="display:flex;align-items:center;gap:10px;"><i data-lucide="${getCategoryIcon(categoryName)}"></i> ${categoryName}</div>`;
+                document.getElementById('modalCategoryAmount').textContent = '...';
+                document.getElementById('categoryTransactions').innerHTML = '<div style="text-align:center;padding:40px 0;opacity:0.45;font-size:14px;">Caricamento...</div>';
+                document.getElementById('categoryModal').style.display = 'block';
+                setTimeout(refreshIcons, 10);
+
                 let url = `/api/transactions/category-details/${encodeURIComponent(categoryName)}`;
                 const params = new URLSearchParams();
 
                 if (lastUploadedFileId) {
                     params.append('uploadedFileId', lastUploadedFileId);
                 }
-                
-                // Add global date filters
+
                 const dateFrom = document.getElementById('dateFrom').value;
                 const dateTo = document.getElementById('dateTo').value;
                 if (dateFrom) params.append('dateFrom', dateFrom);
                 if (dateTo) params.append('dateTo', dateTo);
 
                 const queryString = params.toString();
-                if (queryString) {
-                    url += `?${queryString}`;
-                    console.log('🎯 Dettagli categoria filtrati:', queryString);
-                }
-                
-                console.log('📞 Chiamata API:', url);
-                
+                if (queryString) url += `?${queryString}`;
+
                 const result = await apiCall(url);
                 const { category, transactions, stats } = result.data;
 
@@ -1581,9 +1582,6 @@
                     fileName: lastUploadedFileName
                 });
 
-                currentModalCategory = categoryName;
-
-                document.getElementById('modalCategoryTitle').innerHTML = `<div style="display:flex;align-items:center;gap:10px;"><i data-lucide="${getCategoryIcon(categoryName)}"></i> ${categoryName}</div>`;
                 document.getElementById('modalCategoryAmount').textContent = formatAmount(stats.total);
 
                 const container = document.getElementById('categoryTransactions');
@@ -1629,7 +1627,6 @@
                 if (transactions.length === 0) {
                     container.innerHTML = '<div style="text-align: center; opacity: 0.6; padding: 20px;">Nessuna transazione trovata per questa categoria nel periodo selezionato</div>';
                 }
-                document.getElementById('categoryModal').style.display = 'block';
                 setTimeout(refreshIcons, 50);
             } catch (error) {
                 console.error('Errore dettagli categoria:', error);
@@ -2034,8 +2031,8 @@
                             const categoryName = labels[index];
                             selectedPieCategory = categoryName;
                             window._pieOpenCategory = () => {
-                                _pieReset();
                                 showCategoryDetails(categoryName);
+                                _pieReset();
                             };
 
                             const catData = appData.categories[categoryName];
