@@ -36,6 +36,31 @@
         var pieChartSlices = [];
         var selectedPieCategory = null;
         var selectedCategoryCard = null;
+
+        function _pieReset() {
+            if (!selectedPieCategory) return;
+            selectedPieCategory = null;
+            if (window._pieOpenCategory) window._pieOpenCategory = null;
+            if (chartInstance) {
+                chartInstance.data.datasets[0].offset = 0;
+                chartInstance.update('none');
+            }
+            const inner  = document.getElementById('pieCenterAmountInner');
+            const labelEl = document.getElementById('pieCenterLabel');
+            const btnEl   = document.getElementById('pieCenterBtn');
+            // Ricalcola il totale corrente
+            const total = Object.values(appData.categories).reduce((s, c) => s + Math.abs(cleanNumber(c.amount)), 0);
+            if (inner)  { inner.textContent = formatAmount(total); inner.style.color = 'var(--text-main)'; }
+            if (labelEl) labelEl.textContent = 'TOTALE';
+            if (btnEl)  btnEl.style.display = 'none';
+        }
+        window._pieReset = _pieReset;
+
+        // Reset automatico se si tocca qualcosa fuori dalla pie wrap
+        document.addEventListener('touchstart', (e) => {
+            if (!selectedPieCategory) return;
+            if (!e.target.closest('#pieCenterInfo')) _pieReset();
+        }, { passive: true });
         let chartInstance = null;
         var showAllTransactions = false;
         var lastUploadedFileId = null;
@@ -1936,54 +1961,37 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     cutout: '75%',
-                    layout: { padding: 16 }, // spazio per pop-out senza rimpicciolire il grafico
+                    layout: { padding: 26 },
                     plugins: {
                         legend: { display: false },
                         tooltip: { enabled: false }
                     },
                     onClick: (event, elements) => {
                         const labelEl = document.getElementById('pieCenterLabel');
-                        const hintEl  = document.getElementById('pieCenterHint');
-
-                        const resetCenter = () => {
-                            if (inner) inner.textContent = fmtTotal;
-                            if (inner) inner.style.color = 'var(--text-main)';
-                            if (labelEl) { labelEl.textContent = 'TOTALE'; labelEl.style.display = ''; }
-                            if (hintEl) hintEl.style.display = 'none';
-                        };
+                        const btnEl   = document.getElementById('pieCenterBtn');
 
                         if (elements.length > 0) {
                             const index = elements[0].index;
                             const categoryName = labels[index];
-
-                            if (selectedPieCategory === categoryName) {
-                                // Secondo tap → apre dettagli
-                                selectedPieCategory = null;
-                                chartInstance.data.datasets[0].offset = 0;
-                                chartInstance.update('none');
-                                resetCenter();
+                            selectedPieCategory = categoryName;
+                            window._pieOpenCategory = () => {
+                                _pieReset();
                                 showCategoryDetails(categoryName);
-                            } else {
-                                // Primo tap → spicchio esce, centro pulito
-                                selectedPieCategory = categoryName;
-                                const catData = appData.categories[categoryName];
-                                const offsets = labels.map((_, i) => i === index ? 16 : 0);
-                                chartInstance.data.datasets[0].offset = offsets;
-                                chartInstance.update('none');
-                                if (inner) {
-                                    inner.textContent = formatAmount(Math.abs(cleanNumber(catData.amount)));
-                                    inner.style.color = catData.color || 'var(--accent-primary)';
-                                }
-                                if (labelEl) { labelEl.textContent = categoryName; labelEl.style.display = ''; }
-                                if (hintEl) hintEl.style.display = '';
+                            };
+
+                            const catData = appData.categories[categoryName];
+                            const offsets = labels.map((_, i) => i === index ? 26 : 0);
+                            chartInstance.data.datasets[0].offset = offsets;
+                            chartInstance.update('none');
+
+                            if (inner) {
+                                inner.textContent = formatAmount(Math.abs(cleanNumber(catData.amount)));
+                                inner.style.color = catData.color || 'var(--accent-primary)';
                             }
+                            if (labelEl) labelEl.textContent = categoryName;
+                            if (btnEl) btnEl.style.display = '';
                         } else {
-                            if (selectedPieCategory) {
-                                selectedPieCategory = null;
-                                chartInstance.data.datasets[0].offset = 0;
-                                chartInstance.update('none');
-                                resetCenter();
-                            }
+                            _pieReset();
                         }
                     }
                 }
