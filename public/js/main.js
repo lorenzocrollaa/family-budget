@@ -4,6 +4,11 @@
         var userEmail = 'demo@famiglia.it';
 
         function refreshIcons() { if (typeof lucide !== 'undefined') lucide.createIcons(); }
+
+        // Disable all :hover effects on touch devices
+        window.addEventListener('touchstart', function() {
+            document.body.classList.add('is-touch-device');
+        }, { once: true, passive: true });
         var currentUser = null;
         var appData = {
             transactions: [],

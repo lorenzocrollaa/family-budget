@@ -502,16 +502,16 @@ body::before {
     transition: var(--transition-bounce);
 }
 
-@media (hover: hover) {
-    .transaction-item:hover, .transaction-item-v2:hover {
-        background: var(--tx-bg-hover, var(--bg-glass-hover));
-        border-color: var(--tx-border-hover, var(--accent-primary));
-        transform: translateX(8px) scale(1.02);
-        box-shadow: var(--shadow-soft);
-    }
-    .transaction-item:hover::after, .transaction-item-v2:hover::after {
-        transform: scaleY(1);
-    }
+body:not(.is-touch-device) .transaction-item:hover,
+body:not(.is-touch-device) .transaction-item-v2:hover {
+    background: var(--tx-bg-hover, var(--bg-glass-hover));
+    border-color: var(--tx-border-hover, var(--accent-primary));
+    transform: translateX(8px) scale(1.02);
+    box-shadow: var(--shadow-soft);
+}
+body:not(.is-touch-device) .transaction-item:hover::after,
+body:not(.is-touch-device) .transaction-item-v2:hover::after {
+    transform: scaleY(1);
 }
 
 /* Form Elements */
@@ -981,13 +981,11 @@ input:focus, select:focus {
     box-shadow: var(--shadow-soft); /* Initial shadow */
 }
 
-@media (hover: hover) {
-    .category-card:hover {
-        background: var(--bg-glass-hover);
-        border-color: var(--accent-primary);
-        transform: translateY(-4px);
-        box-shadow: var(--shadow-premium);
-    }
+body:not(.is-touch-device) .category-card:hover {
+    background: var(--bg-glass-hover);
+    border-color: var(--accent-primary);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-premium);
 }
 
 .category-card.selected {
@@ -1278,13 +1276,11 @@ input:focus, select:focus {
     transition: all 0.25s ease;
     cursor: default;
 }
-@media (hover: hover) {
-    .transaction-item-v2:hover {
-        background: var(--tx-bg-hover);
-        border-color: var(--tx-border-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-    }
+body:not(.is-touch-device) .transaction-item-v2:hover {
+    background: var(--tx-bg-hover);
+    border-color: var(--tx-border-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
 }
 .transaction-item-v2.needs-review {
     cursor: pointer;
