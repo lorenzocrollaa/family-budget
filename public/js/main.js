@@ -109,7 +109,7 @@
             selectedPieCategory = null;
             if (window._pieOpenCategory) window._pieOpenCategory = null;
             if (chartInstance) {
-                chartInstance.data.datasets[0].offset = 0;
+                chartInstance.setActiveElements([]);
                 chartInstance.update('none');
             }
             const inner  = document.getElementById('pieCenterAmountInner');
@@ -2011,14 +2011,16 @@
                         backgroundColor: bgColors,
                         borderWidth: isDarkMode() ? 1 : 4,
                         borderColor: chartColors.border,
-                        hoverOffset: 8
+                        hoverOffset: 32,
+                        hoverBorderWidth: 5,
+                        hoverBorderColor: 'rgba(255,255,255,0.9)'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     cutout: '75%',
-                    layout: { padding: 30 },
+                    layout: { padding: 32 },
                     plugins: {
                         legend: { display: false },
                         tooltip: { enabled: false }
@@ -2037,8 +2039,7 @@
                             };
 
                             const catData = appData.categories[categoryName];
-                            const offsets = labels.map((_, i) => i === index ? 30 : 0);
-                            chartInstance.data.datasets[0].offset = offsets;
+                            chartInstance.setActiveElements([{ datasetIndex: 0, index }]);
                             chartInstance.update('none');
 
                             if (inner) {
@@ -2063,7 +2064,7 @@
                                touch.clientY >= rect.top  && touch.clientY <= rect.bottom;
                 if (!inside) {
                     selectedPieCategory = null;
-                    chartInstance.data.datasets[0].offset = 0;
+                    chartInstance.setActiveElements([]);
                     chartInstance.update('none');
                     const labelEl = document.getElementById('pieCenterLabel');
                     const hintEl  = document.getElementById('pieCenterHint');
