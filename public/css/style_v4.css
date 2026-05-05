@@ -493,13 +493,6 @@ body::before {
     overflow: hidden;
 }
 
-.transaction-item:hover, .transaction-item-v2:hover {
-    background: var(--tx-bg-hover, var(--bg-glass-hover));
-    border-color: var(--tx-border-hover, var(--accent-primary));
-    transform: translateX(8px) scale(1.02);
-    box-shadow: var(--shadow-soft);
-}
-
 .transaction-item::after, .transaction-item-v2::after {
     content: '';
     position: absolute;
@@ -509,8 +502,16 @@ body::before {
     transition: var(--transition-bounce);
 }
 
-.transaction-item:hover::after, .transaction-item-v2:hover::after {
-    transform: scaleY(1);
+@media (hover: hover) {
+    .transaction-item:hover, .transaction-item-v2:hover {
+        background: var(--tx-bg-hover, var(--bg-glass-hover));
+        border-color: var(--tx-border-hover, var(--accent-primary));
+        transform: translateX(8px) scale(1.02);
+        box-shadow: var(--shadow-soft);
+    }
+    .transaction-item:hover::after, .transaction-item-v2:hover::after {
+        transform: scaleY(1);
+    }
 }
 
 /* Form Elements */
@@ -2238,19 +2239,19 @@ body {
     left: 0 !important;
     right: 0 !important;
     top: auto !important;
-    transform: none !important;
+    transform: translateZ(0) !important;
     width: 100% !important;
     border-radius: 0 !important;
     border-top: 1px solid rgba(255,255,255,0.07) !important;
     border-left: none !important; border-right: none !important; border-bottom: none !important;
     padding: 8px 4px calc(env(safe-area-inset-bottom, 0px) + 2px) 4px !important;
     gap: 2px !important;
-    background: rgba(9,9,11,0.92) !important;
-    backdrop-filter: blur(24px) !important;
-    -webkit-backdrop-filter: blur(24px) !important;
+    background: rgba(9,9,11,0.96) !important;
     box-shadow: 0 -1px 0 rgba(255,255,255,0.04) !important;
     z-index: 500;
     justify-content: space-around !important;
+    will-change: opacity;
+    transition: opacity 0.15s ease;
 }
 
 #appTabBar .tab {
@@ -3516,13 +3517,6 @@ body {
         transform: none;
         background: var(--bg-card);
         border-color: var(--border-glass);
-    }
-    .transaction-item:hover,
-    .transaction-item-v2:hover {
-        background: var(--bg-card);
-        border-color: var(--border-glass);
-        transform: none;
-        box-shadow: none;
     }
     .category-card:hover {
         background: var(--bg-card);

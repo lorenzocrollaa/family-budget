@@ -442,7 +442,8 @@
             console.log('🔐 Utente non autenticato. Mostro blocco login...');
             document.getElementById('authScreen').style.display = 'flex';
             document.getElementById('appContainer').style.display = 'none';
-            document.getElementById('appTabBar').style.display = 'none';
+            document.getElementById('appTabBar').style.opacity = '0';
+            document.getElementById('appTabBar').style.pointerEvents = 'none';
 
             // Restituisce una Promise che si risolverà solo al termine del login
             return new Promise((resolve) => {
@@ -605,8 +606,8 @@
             document.dispatchEvent(new CustomEvent('userLoaded', { detail: currentUser }));
             document.getElementById('authScreen').style.display = 'none';
             document.getElementById('appContainer').style.display = 'block';
-            document.getElementById('appTabBar').style.display = 'flex';
-            
+            document.getElementById('appTabBar').style.opacity = '1';
+            document.getElementById('appTabBar').style.pointerEvents = '';
 
             if(authResolve) {
                 const token = getAuthToken();
@@ -3005,7 +3006,8 @@
                 
                 document.getElementById('authScreen').style.display = 'none';
                 document.getElementById('appContainer').style.display = 'block';
-                document.getElementById('appTabBar').style.display = 'flex';
+                document.getElementById('appTabBar').style.opacity = '1';
+                document.getElementById('appTabBar').style.pointerEvents = '';
                 
 
                 await initializeApplicationData();
