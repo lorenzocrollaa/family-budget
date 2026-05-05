@@ -153,13 +153,9 @@
         // Collega i tap istantanei (no 300ms delay) agli elementi overlay
         (function() {
             const overlay  = document.getElementById('catFocusOverlay');
-            const closeBtn = document.getElementById('catFocusCloseBtn');
-            const hint     = document.getElementById('catFocusHint');
             const pieBtn   = document.getElementById('pieCenterBtn');
 
-            if (hint) _fastTap(hint, () => { window._catFocusOpen && window._catFocusOpen(); });
             if (overlay) _fastTap(overlay, () => { window._catFocusClose && window._catFocusClose(); });
-            if (closeBtn) _fastTap(closeBtn, (e) => { e.stopPropagation(); window._catFocusClose && window._catFocusClose(); });
             if (pieBtn) _fastTap(pieBtn, () => { window._pieOpenCategory && window._pieOpenCategory(); });
         })();
 
