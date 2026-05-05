@@ -907,19 +907,16 @@
                         }
                     }
                     
-                    // Skip summary display as requested, go straight to Home
+                    // Switch to home first so the balance animation plays there
+                    switchTab('home');
+                    showDateFilter();
+
                     await updateStatsFromAPI();
                     await updateTransactionsFromAPI();
-                    showDateFilter();
-                    
+
                     const successMsg = `✅ ${successfulFiles}/${processedFiles.length} file processati con successo!`;
                     showMessage(successMsg, 'success');
                     showMessage(`Sono state aggiunte ${totalTransactions} nuove transazioni.`, 'success');
-                    
-                    // Switch to home after a very brief delay to let notifications appear
-                    setTimeout(() => { 
-                        switchTab('home'); 
-                    }, 500);
                 } else {
                     throw new Error(result.error || 'Upload fallito');
                 }
