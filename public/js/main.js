@@ -1936,7 +1936,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     cutout: '75%',
-                    layout: { padding: 40 }, // spazio fisso per pop-out — impedisce al grafico di rimpicciolirsi
+                    layout: { padding: 16 }, // spazio per pop-out senza rimpicciolire il grafico
                     plugins: {
                         legend: { display: false },
                         tooltip: { enabled: false }
@@ -1967,7 +1967,7 @@
                                 // Primo tap → spicchio esce, centro pulito
                                 selectedPieCategory = categoryName;
                                 const catData = appData.categories[categoryName];
-                                const offsets = labels.map((_, i) => i === index ? 40 : 0);
+                                const offsets = labels.map((_, i) => i === index ? 16 : 0);
                                 chartInstance.data.datasets[0].offset = offsets;
                                 chartInstance.update('none');
                                 if (inner) {

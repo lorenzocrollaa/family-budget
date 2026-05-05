@@ -2842,8 +2842,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 200px;
-    height: 200px;
+    width: min(280px, 78vw);
+    height: min(280px, 78vw);
 }
 
 .cat-pie-center {
