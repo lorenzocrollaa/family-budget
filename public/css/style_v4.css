@@ -3498,6 +3498,10 @@ body {
     border: 1.5px solid rgba(99,102,241,0.35);
     border-radius: 10px;
     padding: 10px 16px;
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 /* ── Disabilita hover su touch (previene "sticky hover" durante scroll) ── */

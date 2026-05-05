@@ -150,8 +150,10 @@
             const fc       = document.getElementById('catFocusCard');
             const overlay  = document.getElementById('catFocusOverlay');
             const closeBtn = document.getElementById('catFocusCloseBtn');
+            const hint     = document.getElementById('catFocusHint');
             const pieBtn   = document.getElementById('pieCenterBtn');
 
+            if (hint) _fastTap(hint, (e) => { e.stopPropagation(); window._catFocusOpen && window._catFocusOpen(); });
             if (fc) _fastTap(fc, () => { window._catFocusOpen && window._catFocusOpen(); });
             if (overlay) _fastTap(overlay, () => { window._catFocusClose && window._catFocusClose(); });
             if (closeBtn) _fastTap(closeBtn, (e) => { e.stopPropagation(); window._catFocusClose && window._catFocusClose(); });
