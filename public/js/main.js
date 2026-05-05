@@ -1601,6 +1601,19 @@
 
         const _catDetailCache = {};
 
+        function _invalidateAnalysisCache() {
+            analysisMonthlyData = [];
+            if (typeof analysisOverviewChartInst !== 'undefined' && analysisOverviewChartInst) {
+                analysisOverviewChartInst.destroy();
+                analysisOverviewChartInst = null;
+            }
+            if (typeof analysisCategoryChartInst !== 'undefined' && analysisCategoryChartInst) {
+                analysisCategoryChartInst.destroy();
+                analysisCategoryChartInst = null;
+            }
+            Object.keys(_catDetailCache).forEach(k => delete _catDetailCache[k]);
+        }
+
         async function showCategoryDetails(categoryName) {
             try {
                 currentModalCategory = categoryName;
@@ -1732,10 +1745,12 @@
             updateDateDisplay(document.getElementById('dateTo'), 'dateToDisplay');
 
             currentDateFilter = { from: dateFrom, to: dateTo };
+            _invalidateAnalysisCache();
             showMessage('Applicando filtro...', 'info');
             await updateStatsFromAPI();
             await updateTransactionsFromAPI();
             drawPieChart(); drawMiniCharts();
+            await loadAnalysisData();
 
             const fromFormatted = new Date(dateFrom).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
             const toFormatted = new Date(dateTo).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -1758,10 +1773,11 @@
             updateDateDisplay(document.getElementById('dateTo'), 'dateToDisplay');
 
             currentDateFilter = { from, to };
-            
+            _invalidateAnalysisCache();
             await updateStatsFromAPI();
             await updateTransactionsFromAPI();
             drawPieChart(); drawMiniCharts();
+            await loadAnalysisData();
         }
 
         async function clearDateFilter() {
@@ -1794,9 +1810,11 @@
                 document.getElementById('transactionsTitle').textContent = 'Ultimi Movimenti (Global)';
             }
 
+            _invalidateAnalysisCache();
             await updateStatsFromAPI();
             await updateTransactionsFromAPI();
             drawPieChart(); drawMiniCharts();
+            await loadAnalysisData();
             showMessage('Filtri ripristinati', 'success');
         }
 
