@@ -181,7 +181,11 @@
                 const avatarEl = document.getElementById('profileModalAvatar');
                 const badgeEl = document.getElementById('profileModalBadge');
                 if (nameEl) nameEl.textContent = user.name || user.email || 'Famiglia';
-                if (avatarEl && user.avatar) avatarEl.src = user.avatar;
+                if (avatarEl) {
+                    avatarEl.src = user.avatar
+                        ? (user.avatar.startsWith('/') ? user.avatar : `img/avatars/${user.avatar}.png`)
+                        : 'img/avatars/default.png';
+                }
                 if (badgeEl) {
                     badgeEl.textContent = (user.plan === 'pro') ? 'PRO' : 'FREE';
                     badgeEl.className = 'plan-badge ' + ((user.plan === 'pro') ? 'plan-pro' : 'plan-free');
@@ -669,10 +673,8 @@
                 const avatarSrc = currentUser.avatar
                     ? (currentUser.avatar.startsWith('/') ? currentUser.avatar : `img/avatars/${currentUser.avatar}.png`)
                     : 'img/avatars/default.png';
-                const btn = document.getElementById('userAvatarImg');
-                const panel = document.getElementById('userAvatarImgPanel');
-                if (btn) btn.src = avatarSrc;
-                if (panel) panel.src = avatarSrc;
+                const profileModalAvatar = document.getElementById('profileModalAvatar');
+                if (profileModalAvatar) profileModalAvatar.src = avatarSrc;
 
                 // Badge piano
                 const badgeEl = document.getElementById('planBadge');

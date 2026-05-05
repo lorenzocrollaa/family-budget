@@ -1276,11 +1276,13 @@ input:focus, select:focus {
     transition: all 0.25s ease;
     cursor: default;
 }
-.transaction-item-v2:hover {
-    background: var(--tx-bg-hover);
-    border-color: var(--tx-border-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+@media (hover: hover) {
+    .transaction-item-v2:hover {
+        background: var(--tx-bg-hover);
+        border-color: var(--tx-border-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
 }
 .transaction-item-v2.needs-review {
     cursor: pointer;
