@@ -475,7 +475,7 @@
                     <div class="cat-pie-center">
                         <div id="pieCenterAmountInner" style="font-size:22px;font-weight:800;font-family:'Outfit',sans-serif;color:var(--text-main);">€ 0</div>
                         <div id="pieCenterLabel" style="font-size:11px;opacity:0.55;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;margin-top:4px;">Totale</div>
-                        <button id="pieCenterBtn" onclick="window._pieOpenCategory()" style="display:none;margin-top:10px;padding:8px 18px;border-radius:999px;border:none;background:var(--accent-primary);color:#fff;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.03em;">Vedi spese</button>
+                        <button id="pieCenterBtn" style="display:none;margin-top:10px;padding:8px 18px;border-radius:999px;border:none;background:var(--accent-primary);color:#fff;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.03em;touch-action:manipulation;">Vedi spese</button>
                     </div>
                 </div>
             </div>
@@ -1067,9 +1067,9 @@
     </script>
 
     <!-- Category Focus Overlay -->
-    <div id="catFocusOverlay" onclick="window._catFocusClose && window._catFocusClose()"></div>
-    <div id="catFocusCard" onclick="window._catFocusOpen && window._catFocusOpen()">
-        <button id="catFocusCloseBtn" onclick="event.stopPropagation(); window._catFocusClose && window._catFocusClose()">×</button>
+    <div id="catFocusOverlay"></div>
+    <div id="catFocusCard">
+        <button id="catFocusCloseBtn">×</button>
         <div id="catFocusIcon"></div>
         <div id="catFocusName"></div>
         <div id="catFocusAmount"></div>

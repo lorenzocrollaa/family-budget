@@ -38,11 +38,27 @@
         var _catFocusCategory = null;
         var _catFocusOriginRect = null;
 
+        // Helper: collega un elemento a un handler senza 300ms delay
+        function _fastTap(el, handler) {
+            let _tapped = false;
+            el.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                if (_tapped) return;
+                _tapped = true;
+                setTimeout(() => { _tapped = false; }, 400);
+                handler(e);
+            }, { passive: false });
+            el.addEventListener('click', (e) => {
+                if (_tapped) return; // già gestito da touchend
+                handler(e);
+            });
+        }
+
         window._catFocusOpen = function() {
             if (!_catFocusCategory) return;
             const cat = _catFocusCategory;
-            showCategoryDetails(cat);   // apre subito
-            window._catFocusClose();    // chiude overlay in background
+            showCategoryDetails(cat);
+            window._catFocusClose();
         };
 
         window._catFocusClose = function() {
@@ -153,6 +169,19 @@
             if (dx < 0 && idx < SWIPE_TABS.length - 1) switchTab(SWIPE_TABS[idx + 1]);
             else if (dx > 0 && idx > 0) switchTab(SWIPE_TABS[idx - 1]);
         }, { passive: true });
+        // Collega i tap istantanei (no 300ms delay) agli elementi overlay
+        (function() {
+            const fc       = document.getElementById('catFocusCard');
+            const overlay  = document.getElementById('catFocusOverlay');
+            const closeBtn = document.getElementById('catFocusCloseBtn');
+            const pieBtn   = document.getElementById('pieCenterBtn');
+
+            if (fc) _fastTap(fc, () => { window._catFocusOpen && window._catFocusOpen(); });
+            if (overlay) _fastTap(overlay, () => { window._catFocusClose && window._catFocusClose(); });
+            if (closeBtn) _fastTap(closeBtn, (e) => { e.stopPropagation(); window._catFocusClose && window._catFocusClose(); });
+            if (pieBtn) _fastTap(pieBtn, () => { window._pieOpenCategory && window._pieOpenCategory(); });
+        })();
+
         let chartInstance = null;
         var showAllTransactions = false;
         var lastUploadedFileId = null;
