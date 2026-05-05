@@ -1591,13 +1591,45 @@
             }
         }
 
+        const _catDetailCache = {};
+
         async function showCategoryDetails(categoryName) {
             try {
-                // Apri il modale subito con loader — nessun lag percepito
                 currentModalCategory = categoryName;
                 document.getElementById('modalCategoryTitle').innerHTML = `<div style="display:flex;align-items:center;gap:10px;"><i data-lucide="${getCategoryIcon(categoryName)}"></i> ${categoryName}</div>`;
-                document.getElementById('modalCategoryAmount').textContent = '...';
-                document.getElementById('categoryTransactions').innerHTML = '<div style="text-align:center;padding:40px 0;opacity:0.45;font-size:14px;">Caricamento...</div>';
+
+                const known = appData.categories[categoryName];
+                if (known) {
+                    document.getElementById('modalCategoryAmount').textContent = formatAmount(known.amount);
+                } else {
+                    document.getElementById('modalCategoryAmount').textContent = '';
+                }
+
+                const dateFrom = document.getElementById('dateFrom').value;
+                const dateTo = document.getElementById('dateTo').value;
+                const cacheKey = `${categoryName}|${lastUploadedFileId}|${dateFrom}|${dateTo}`;
+
+                if (_catDetailCache[cacheKey]) {
+                    const { transactions, stats } = _catDetailCache[cacheKey];
+                    document.getElementById('modalCategoryAmount').textContent = formatAmount(stats.total);
+                    document.getElementById('categoryModal').style.display = 'block';
+                    setTimeout(refreshIcons, 10);
+                    _renderCategoryTransactions(categoryName, transactions, stats);
+                    return;
+                }
+
+                const skeletonCount = known ? Math.min(known.count, 6) : 3;
+                const skeletonHTML = Array.from({ length: skeletonCount }, () =>
+                    `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(128,128,128,0.1);">
+                        <div style="width:32px;height:32px;border-radius:8px;background:rgba(128,128,128,0.12);flex-shrink:0;"></div>
+                        <div style="flex:1;">
+                            <div style="height:12px;border-radius:6px;background:rgba(128,128,128,0.12);margin-bottom:6px;width:60%;"></div>
+                            <div style="height:10px;border-radius:5px;background:rgba(128,128,128,0.08);width:35%;"></div>
+                        </div>
+                        <div style="width:55px;height:14px;border-radius:6px;background:rgba(128,128,128,0.12);"></div>
+                    </div>`
+                ).join('');
+                document.getElementById('categoryTransactions').innerHTML = skeletonHTML;
                 document.getElementById('categoryModal').style.display = 'block';
                 setTimeout(refreshIcons, 10);
 
@@ -1617,30 +1649,29 @@
                 if (queryString) url += `?${queryString}`;
 
                 const result = await apiCall(url);
-                const { category, transactions, stats } = result.data;
-
-                console.log(`📊 Categoria "${categoryName}":`, {
-                    transazioni: transactions.length,
-                    totale: stats.total,
-                    fileId: lastUploadedFileId,
-                    fileName: lastUploadedFileName
-                });
-
+                const { transactions, stats } = result.data;
+                _catDetailCache[cacheKey] = { transactions, stats };
                 document.getElementById('modalCategoryAmount').textContent = formatAmount(stats.total);
+                _renderCategoryTransactions(categoryName, transactions, stats);
+            } catch (error) {
+                console.error('Errore dettagli categoria:', error);
+                showMessage('Errore nel caricamento dei dettagli categoria', 'error');
+            }
+        }
 
+        function _renderCategoryTransactions(categoryName, transactions, stats) {
                 const container = document.getElementById('categoryTransactions');
                 container.innerHTML = '';
 
-                // ✅ Box informativo semplificato come richiesto
                 const infoBox = document.createElement('div');
-                infoBox.className = 'info-pill-modern'; 
+                infoBox.className = 'info-pill-modern';
                 infoBox.style = `background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 126, 241, 0.2); border-radius: 12px; padding: 12px; margin-bottom: 20px; text-align: center; font-size: 14px; color: ${isDarkMode() ? '#a5b4fc' : '#4338ca'}; font-weight: 500;`;
                 infoBox.innerHTML = `<strong>${transactions.length}</strong> transazioni • Totale: <strong>${formatAmount(stats.total)}</strong>`;
                 container.appendChild(infoBox);
 
                 transactions.forEach(trans => {
                     const transDiv = document.createElement('div');
-                    transDiv.className = 'transaction-item-v2'; 
+                    transDiv.className = 'transaction-item-v2';
                     transDiv.style.margin = '8px 0';
                     transDiv.style.cursor = 'default';
                     transDiv.innerHTML = `
@@ -1655,16 +1686,12 @@
                         </div>
                         <div style="font-weight: 700; color: #f43f5e; font-size: 15px;">${formatAmount(trans.amount)}</div>
                     `;
-                    
-                    // Aggiungi click handler per l'edit
                     const editBtn = transDiv.querySelector('.edit-icon-btn');
                     editBtn.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        console.log('✏️ Edit clicked for:', trans.description);
                         openEditFromModal(trans);
                     });
-
                     container.appendChild(transDiv);
                 });
 
@@ -1672,10 +1699,6 @@
                     container.innerHTML = '<div style="text-align: center; opacity: 0.6; padding: 20px;">Nessuna transazione trovata per questa categoria nel periodo selezionato</div>';
                 }
                 setTimeout(refreshIcons, 50);
-            } catch (error) {
-                console.error('Errore dettagli categoria:', error);
-                showMessage('Errore nel caricamento dei dettagli categoria', 'error');
-            }
         }
 
         function updateDateDisplay(input, displayId) {
