@@ -1410,12 +1410,19 @@
 
             if (!currentVerifyTransaction) return;
             try {
+                // Conferma sempre prima di applicare
+                const confirmed = await showConfirm(
+                    `${currentVerifyTransaction.description}\n\nCambiare in "${newCategory}"?`,
+                    { okLabel: 'Cambia', cancelLabel: 'Annulla' }
+                );
+                if (!confirmed) return;
+
                 const similarCount = isGenericIntermediary(currentVerifyTransaction.description)
                     ? 0
                     : await countSimilarTransactions(currentVerifyTransaction.description, currentVerifyTransaction.id);
 
                 if (similarCount > 0) {
-                    const applyAll = await showConfirm(`Ci sono ${similarCount} altra/e transazioni di "${currentVerifyTransaction.description}"!\n\nVuoi cambiare anche la loro categoria in "${newCategory}"? Clicca OK per tutte, Annulla per solo questa.`);
+                    const applyAll = await showConfirm(`Ci sono ${similarCount} altra/e transazioni di "${currentVerifyTransaction.description}"!\n\nVuoi cambiare anche la loro categoria in "${newCategory}"?`, { okLabel: 'Tutte', cancelLabel: 'Solo questa' });
                     if (applyAll) {
                         showMessage(`Applicando "${newCategory}" a tutte le transazioni...`, 'info');
                         await apiCall(`/api/transactions/bulk-verify-by-description`, {
@@ -1433,20 +1440,21 @@
                             method: 'PUT',
                             body: JSON.stringify({ category: newCategory, isVerified: true, confidence: 1.0 })
                         });
-                        showMessage(`Categoria cambiata in "${newCategory}" per questa transazione.`, 'success');
+                        showMessage(`Categoria cambiata in "${newCategory}".`, 'success');
                     }
                 } else {
                     await apiCall(`/api/transactions/${currentVerifyTransaction.id}`, {
                         method: 'PUT',
                         body: JSON.stringify({ category: newCategory, isVerified: true, confidence: 1.0 })
                     });
-                    showMessage(`Categoria cambiata in "${newCategory}"! Il sistema ha imparato.`, 'success');
+                    showMessage(`Categoria cambiata in "${newCategory}"!`, 'success');
                 }
 
                 await updateTransactionsFromAPI();
                 await updateStatsFromAPI();
 
-                // ✅ Se il modal categoria è aperto, rinfrescalo immediatatamente
+                // Svuota tutta la cache categorie (dati cambiati) e ricarica il modale
+                Object.keys(_catDetailCache).forEach(k => delete _catDetailCache[k]);
                 if (currentModalCategory) {
                     await showCategoryDetails(currentModalCategory);
                 }
