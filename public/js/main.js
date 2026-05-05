@@ -3242,14 +3242,7 @@
                     },
                     plugins: {
                         legend: { display: false },
-                        tooltip: {
-                            backgroundColor: tooltipBg,
-                            borderColor: tooltipBorder,
-                            borderWidth: 1,
-                            titleColor: isDarkMode() ? '#fff' : '#000',
-                            bodyColor: isDarkMode() ? '#fff' : '#000',
-                            callbacks: { label: ctx => `${ctx.dataset.label}: ${formatAmount(ctx.parsed.y)}` }
-                        }
+                        tooltip: { enabled: false }
                     },
                     scales: {
                         x: { grid: { color: gridColor }, ticks: { color: Chart.defaults.color } },
