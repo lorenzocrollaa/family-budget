@@ -1640,8 +1640,6 @@
                     params.append('uploadedFileId', lastUploadedFileId);
                 }
 
-                const dateFrom = document.getElementById('dateFrom').value;
-                const dateTo = document.getElementById('dateTo').value;
                 if (dateFrom) params.append('dateFrom', dateFrom);
                 if (dateTo) params.append('dateTo', dateTo);
 
