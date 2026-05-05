@@ -701,7 +701,7 @@ input:focus, select:focus {
 
 .tab-content {
     display: none;
-    animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: fadeIn 0.12s ease-out;
     width: 100% !important;
     max-width: 1000px !important;
     margin: 0 auto !important;
