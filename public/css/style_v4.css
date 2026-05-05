@@ -3576,3 +3576,62 @@ body {
     transform: scale(0.98);
     transition: transform 0.08s ease;
 }
+
+/* ── Profile Modal ── */
+#profileModalOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 902;
+    background: rgba(0,0,0,0);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.32s ease, backdrop-filter 0.32s ease, background 0.32s ease;
+}
+#profileModalOverlay.active {
+    opacity: 1;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    pointer-events: auto;
+}
+#profileModal {
+    position: fixed;
+    z-index: 903;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -48%) scale(0.88);
+    width: min(320px, 88vw);
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
+    border-radius: 24px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+    padding: 36px 28px 28px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.32s ease, transform 0.36s cubic-bezier(0.34,1.1,0.64,1);
+}
+#profileModal.active {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: auto;
+}
+#profileModalClose {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(128,128,128,0.18);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-main);
+    font-size: 20px;
+    font-weight: 300;
+    line-height: 1;
+}

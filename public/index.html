@@ -920,9 +920,9 @@
                 <div><i data-lucide="landmark"></i></div>
                 <div>Banche</div>
             </button>
-            <button class="tab" onclick="switchTab('database')">
-                <div><i data-lucide="database"></i></div>
-                <div>DB</div>
+            <button class="tab" id="profileTabBtn" onclick="openProfileModal()">
+                <div><i data-lucide="user"></i></div>
+                <div>Profilo</div>
             </button>
         </div>
 
@@ -1065,6 +1065,32 @@
             }
         });
     </script>
+
+    <!-- Profile Modal -->
+    <div id="profileModalOverlay" onclick="closeProfileModal()"></div>
+    <div id="profileModal">
+        <button id="profileModalClose" onclick="closeProfileModal()">×</button>
+        <div class="mpp-user" style="margin-bottom:0;">
+            <img class="mpp-avatar" id="profileModalAvatar" src="img/avatars/default.png" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;">
+            <span id="profileModalName" class="mpp-name" style="font-size:20px;font-weight:700;"></span>
+            <span id="profileModalBadge" class="plan-badge plan-free">FREE</span>
+        </div>
+        <div class="mpp-divider" style="margin:20px 0;"></div>
+        <div class="mpp-row">
+            <span class="mpp-row-lbl"><i data-lucide="moon" style="width:15px;height:15px;vertical-align:-3px;margin-right:7px;"></i>Tema scuro</span>
+            <label class="theme-sw">
+                <input type="checkbox" id="profileThemeSwitch" onchange="onThemeSwitchChange(this)">
+                <span class="theme-sw-track"><span class="theme-sw-knob"></span></span>
+            </label>
+        </div>
+        <div class="mpp-divider" style="margin:20px 0;"></div>
+        <div class="mpp-item" onclick="closeProfileModal(); openAvatarModal(event);" style="font-size:15px;padding:10px 0;">
+            <i data-lucide="user-cog" style="width:16px;height:16px;"></i> Cambia avatar
+        </div>
+        <div class="mpp-item danger" onclick="closeProfileModal(); handleLogout();" style="font-size:15px;padding:10px 0;">
+            <i data-lucide="log-out" style="width:16px;height:16px;"></i> Esci
+        </div>
+    </div>
 
     <!-- Category Focus Overlay -->
     <div id="catFocusOverlay"></div>

@@ -172,6 +172,37 @@
         window.getLastBankAccountId = () => lastBankAccountId;
         window.setLastFileDateRange = (val) => { lastFileDateRange = val; };
 
+        function openProfileModal() {
+            // Sincronizza i dati utente correnti
+            const user = currentUser;
+            if (user) {
+                const nameEl = document.getElementById('profileModalName');
+                const avatarEl = document.getElementById('profileModalAvatar');
+                const badgeEl = document.getElementById('profileModalBadge');
+                if (nameEl) nameEl.textContent = user.name || user.email || 'Famiglia';
+                if (avatarEl && user.avatar) avatarEl.src = user.avatar;
+                if (badgeEl) {
+                    badgeEl.textContent = (user.plan === 'pro') ? 'PRO' : 'FREE';
+                    badgeEl.className = 'plan-badge ' + ((user.plan === 'pro') ? 'plan-pro' : 'plan-free');
+                }
+            }
+            // Sincronizza il toggle tema
+            const themeSwitch = document.getElementById('profileThemeSwitch');
+            const mainSwitch = document.getElementById('themeSwitchInput');
+            if (themeSwitch && mainSwitch) themeSwitch.checked = mainSwitch.checked;
+
+            document.getElementById('profileModalOverlay').classList.add('active');
+            document.getElementById('profileModal').classList.add('active');
+            if (typeof refreshIcons === 'function') refreshIcons();
+        }
+        window.openProfileModal = openProfileModal;
+
+        function closeProfileModal() {
+            document.getElementById('profileModalOverlay').classList.remove('active');
+            document.getElementById('profileModal').classList.remove('active');
+        }
+        window.closeProfileModal = closeProfileModal;
+
         function showConfirm(message, { okLabel = 'Ok', cancelLabel = 'Annulla' } = {}) {
             return new Promise(resolve => {
                 const parts = message.split('\n\n');
