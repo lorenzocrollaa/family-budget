@@ -2842,8 +2842,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: min(280px, 78vw);
-    height: min(280px, 78vw);
+    width: min(340px, 88vw);
+    height: min(340px, 88vw);
 }
 
 .cat-pie-center {
@@ -2853,6 +2853,13 @@ body {
     transform: translate(-50%, -50%);
     text-align: center;
     pointer-events: none;
+}
+
+/* Il pulsante all'interno deve restare cliccabile */
+#pieCenterBtn {
+    pointer-events: auto;
+    position: relative;
+    z-index: 10;
 }
 
 /* ════════════════════════════════════════

@@ -2018,7 +2018,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     cutout: '75%',
-                    layout: { padding: 26 },
+                    layout: { padding: 30 },
                     plugins: {
                         legend: { display: false },
                         tooltip: { enabled: false }
@@ -2037,7 +2037,7 @@
                             };
 
                             const catData = appData.categories[categoryName];
-                            const offsets = labels.map((_, i) => i === index ? 26 : 0);
+                            const offsets = labels.map((_, i) => i === index ? 30 : 0);
                             chartInstance.data.datasets[0].offset = offsets;
                             chartInstance.update('none');
 
