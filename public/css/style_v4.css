@@ -981,11 +981,13 @@ input:focus, select:focus {
     box-shadow: var(--shadow-soft); /* Initial shadow */
 }
 
-.category-card:hover {
-    background: var(--bg-glass-hover);
-    border-color: var(--accent-primary);
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-premium);
+@media (hover: hover) {
+    .category-card:hover {
+        background: var(--bg-glass-hover);
+        border-color: var(--accent-primary);
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-premium);
+    }
 }
 
 .category-card.selected {
@@ -3519,12 +3521,6 @@ body {
         transform: none;
         background: var(--bg-card);
         border-color: var(--border-glass);
-    }
-    .category-card:hover {
-        background: var(--bg-card);
-        border-color: var(--border-glass);
-        transform: none;
-        box-shadow: var(--shadow-soft);
     }
     .bank-account-card:hover {
         transform: none;

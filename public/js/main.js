@@ -3218,15 +3218,7 @@
                         }
                     },
                     plugins: {
-                        legend: { 
-                            position: 'top', 
-                            labels: { 
-                                usePointStyle: true, 
-                                padding: 16, 
-                                font: { size: 12 },
-                                color: Chart.defaults.color
-                            } 
-                        },
+                        legend: { display: false },
                         tooltip: {
                             backgroundColor: tooltipBg,
                             borderColor: tooltipBorder,
