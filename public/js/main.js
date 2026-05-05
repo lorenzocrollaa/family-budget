@@ -19,6 +19,7 @@
         var currentDateFilter = null;
         let _balAnimFrame = null;
         let _balCurrent = 0;
+        let _balAnimEndTime = 0;
         function animateBalance(target) {
             if (_balAnimFrame) cancelAnimationFrame(_balAnimFrame);
             const el = document.getElementById('totalBalance');
@@ -27,6 +28,7 @@
             const diff = target - start;
             const dur = 700;
             const t0 = performance.now();
+            _balAnimEndTime = t0 + dur;
             function step(now) {
                 const p = Math.min((now - t0) / dur, 1);
                 const ease = 1 - Math.pow(1 - p, 3);
@@ -907,16 +909,18 @@
                         }
                     }
                     
-                    // Switch to home first so the balance animation plays there
-                    switchTab('home');
-                    showDateFilter();
-
-                    await updateStatsFromAPI();
+                    // Load everything first, then switch when ready
+                    await updateStatsFromAPI();       // starts balance animation (_balAnimEndTime set)
                     await updateTransactionsFromAPI();
+                    showDateFilter();
 
                     const successMsg = `✅ ${successfulFiles}/${processedFiles.length} file processati con successo!`;
                     showMessage(successMsg, 'success');
                     showMessage(`Sono state aggiunte ${totalTransactions} nuove transazioni.`, 'success');
+
+                    // Wait for balance animation to finish, then transition
+                    const remaining = Math.max(0, _balAnimEndTime - performance.now());
+                    setTimeout(() => switchTab('home'), remaining + 250);
                 } else {
                     throw new Error(result.error || 'Upload fallito');
                 }
