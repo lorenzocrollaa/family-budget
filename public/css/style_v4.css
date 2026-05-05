@@ -2274,29 +2274,25 @@ body {
     padding: 0 !important;
 }
 
-/* Tab attivo: cerchio bianco intorno all'icona */
+/* Tab attivo: solo icona e testo bianchi */
 #appTabBar .tab.active {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
     color: #fff !important;
 }
-#appTabBar .tab.active > div:first-child {
-    background: rgba(255,255,255,0.1);
-    border: 1.5px solid rgba(255,255,255,0.88);
-    border-radius: 13px;
-    width: 46px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+#appTabBar .tab.active svg,
+#appTabBar .tab.active i {
+    stroke: #fff !important;
+    color: #fff !important;
 }
 #appTabBar .tab:not(.active) {
-    color: rgba(255,255,255,0.45) !important;
+    color: rgba(255,255,255,0.4) !important;
 }
-#appTabBar .tab:not(.active) > div:first-child {
-    border: none;
-    background: transparent;
+#appTabBar .tab:not(.active) svg,
+#appTabBar .tab:not(.active) i {
+    stroke: rgba(255,255,255,0.4) !important;
+    color: rgba(255,255,255,0.4) !important;
 }
 
 /* App content area: sits above tab bar */
