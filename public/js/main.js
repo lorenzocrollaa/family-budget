@@ -2124,7 +2124,7 @@
                 content.style.display = 'none';
             });
 
-            const targetTab = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
+            const targetTab = document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`);
             const targetContent = document.getElementById(tabName + 'Tab');
 
             if (targetTab) targetTab.classList.add('active');

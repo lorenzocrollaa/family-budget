@@ -2282,6 +2282,7 @@ body {
     color: #fff !important;
 }
 #appTabBar .tab.active svg,
+#appTabBar .tab.active svg *,
 #appTabBar .tab.active i {
     stroke: #fff !important;
     color: #fff !important;
@@ -2290,6 +2291,7 @@ body {
     color: rgba(255,255,255,0.4) !important;
 }
 #appTabBar .tab:not(.active) svg,
+#appTabBar .tab:not(.active) svg *,
 #appTabBar .tab:not(.active) i {
     stroke: rgba(255,255,255,0.4) !important;
     color: rgba(255,255,255,0.4) !important;
