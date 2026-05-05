@@ -1003,22 +1003,22 @@ input:focus, select:focus {
         left: 0;
         right: 0;
         width: 100%;
-        border-radius: 0; /* Su mobile meglio piatta al fondo */
-        padding: 10px 10px calc(env(safe-area-inset-bottom, 15px) + 10px) 10px;
+        border-radius: 0;
+        padding: 18px 10px calc(env(safe-area-inset-bottom, 15px) + 18px) 10px;
         justify-content: space-around;
         gap: 0;
     }
-    
+
     .tab {
         flex: 1;
-        padding: 8px 0;
-        font-size: 11px;
+        padding: 14px 0;
+        font-size: 13px;
         font-weight: 600;
-        gap: 4px;
-        min-width: 44px; /* Minimum touch target */
+        gap: 6px;
+        min-width: 44px;
     }
 
-    .tab i { width: 24px; height: 24px; } /* Clear, visible icons */
+    .tab i { width: 28px; height: 28px; }
 
     .tab.tab-upload {
         width: 56px;
@@ -2243,7 +2243,7 @@ body {
     border-radius: 0 !important;
     border-top: 1px solid rgba(255,255,255,0.07) !important;
     border-left: none !important; border-right: none !important; border-bottom: none !important;
-    padding: 4px 4px 22px !important;
+    padding: 16px 4px calc(env(safe-area-inset-bottom, 20px) + 16px) 4px !important;
     gap: 2px !important;
     background: rgba(9,9,11,0.92) !important;
     backdrop-filter: blur(24px) !important;
@@ -2256,21 +2256,21 @@ body {
 #appTabBar .tab {
     min-width: 0 !important;
     flex: 1;
-    padding: 6px 2px !important;
-    font-size: 9px !important;
-    gap: 2px !important;
+    padding: 14px 2px !important;
+    font-size: 12px !important;
+    gap: 6px !important;
     border-radius: 10px !important;
 }
 
 #appTabBar .tab > div:first-child { font-size: 0; line-height: 1; }
 #appTabBar .tab > div:first-child svg,
-#appTabBar .tab > div:first-child i { width: 18px !important; height: 18px !important; }
+#appTabBar .tab > div:first-child i { width: 26px !important; height: 26px !important; }
 
 #appTabBar .tab.tab-upload {
-    width: 40px !important; height: 40px !important;
-    min-width: 40px !important; flex: 0 0 40px;
-    margin-top: -12px !important;
-    border-radius: 13px !important;
+    width: 52px !important; height: 52px !important;
+    min-width: 52px !important; flex: 0 0 52px;
+    margin-top: -20px !important;
+    border-radius: 18px !important;
     padding: 0 !important;
 }
 
