@@ -1459,6 +1459,9 @@
                     await showCategoryDetails(currentModalCategory);
                 }
 
+                _invalidateAnalysisCache();
+                if (typeof loadAnalysisData === 'function') await loadAnalysisData();
+
                 const activeTab = document.querySelector('.tab-content.active');
                 if (activeTab && activeTab.id === 'databaseTab') {
                     await loadDatabaseTransactions();
