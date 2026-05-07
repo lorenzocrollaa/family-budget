@@ -38,9 +38,9 @@
         <div class="phone-btn phone-power"></div>
         <div class="phone-screen-inner">
 
-        <!-- Splash screen -->
-        <div id="splashScreen">
-            <img src="img/splash_portrait.png" id="splashLogo">
+        <!-- Splash screen: inline styles so it covers everything from frame 1, before CSS loads -->
+        <div id="splashScreen" style="position:absolute;inset:0;overflow:hidden;z-index:10000;">
+            <img src="img/splash_portrait.png" id="splashLogo" style="width:100%;height:100%;object-fit:cover;">
         </div>
 
         <!-- iOS-style status bar -->
