@@ -69,6 +69,14 @@
             if (KB) KB.hide();
         });
 
+        // Close any modal by tapping the backdrop (outside the card)
+        document.addEventListener('click', function(e) {
+            if (!e.target.classList.contains('modal')) return;
+            const closeBtn = e.target.querySelector('[onclick*="close"], [onclick*="Close"]');
+            if (closeBtn) { closeBtn.click(); return; }
+            e.target.style.display = 'none'; // fallback
+        });
+
         // Dismiss keyboard when tapping outside an input anywhere in the app
         document.addEventListener('touchend', function(e) {
             if (!e.target.closest('input, textarea, select, button, [contenteditable]')) {
