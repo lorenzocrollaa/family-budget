@@ -42,6 +42,27 @@
             } catch (e) {}
         }
 
+        function togglePasswordVisibility(inputId, btn) {
+            const inp = document.getElementById(inputId);
+            if (!inp) return;
+            const show = inp.type === 'password';
+            inp.type = show ? 'text' : 'password';
+            const icon = btn.querySelector('i[data-lucide]');
+            if (icon) { icon.setAttribute('data-lucide', show ? 'eye-off' : 'eye'); refreshIcons(); }
+        }
+
+        // Dismiss keyboard when tapping outside an input anywhere in the app
+        document.addEventListener('touchend', function(e) {
+            if (!e.target.closest('input, textarea, select, button, [contenteditable]')) {
+                const active = document.activeElement;
+                if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+                    active.blur();
+                    const KB = window.Capacitor?.Plugins?.Keyboard;
+                    if (KB) KB.hide();
+                }
+            }
+        }, { passive: true });
+
         let _balAnimFrame = null;
         let _balCurrent = 0;
         let _balAnimEndTime = 0;
