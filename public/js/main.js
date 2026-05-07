@@ -479,7 +479,14 @@
 
             // Se arriviamo qui, l'utente DEVE fare login
             console.log('🔐 Utente non autenticato. Mostro blocco login...');
-            document.getElementById('authScreen').style.display = 'flex';
+            const authEl = document.getElementById('authScreen');
+            authEl.style.display = 'flex';
+            // Fade in after splash (4s total). If splash already gone, show immediately.
+            const splashDelay = Math.max(0, 4000 - performance.now());
+            setTimeout(() => {
+                authEl.style.opacity = '1';
+                authEl.style.pointerEvents = '';
+            }, splashDelay);
             document.getElementById('appContainer').style.display = 'none';
             document.getElementById('appTabBar').style.opacity = '0';
             document.getElementById('appTabBar').style.pointerEvents = 'none';
@@ -643,7 +650,10 @@
         async function finishAuthentication() {
             updateUserDisplay();
             document.dispatchEvent(new CustomEvent('userLoaded', { detail: currentUser }));
-            document.getElementById('authScreen').style.display = 'none';
+            const authEl2 = document.getElementById('authScreen');
+            authEl2.style.opacity = '0';
+            authEl2.style.pointerEvents = 'none';
+            setTimeout(() => { authEl2.style.display = 'none'; }, 300);
             document.getElementById('appContainer').style.display = 'block';
             document.getElementById('appTabBar').style.opacity = '1';
             document.getElementById('appTabBar').style.pointerEvents = '';
