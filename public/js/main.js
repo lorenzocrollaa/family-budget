@@ -19,15 +19,20 @@
         var currentDateFilter = null;
 
         // Show splash only on true first open, not after logout (reload)
-        // Native splash screen: hide after 3.5s with fade (only on first open)
+        // Web splash: shown only on first open, not after logout
         (function() {
-            const SS = window.Capacitor?.Plugins?.SplashScreen;
-            if (!SS) return;
+            const splash = document.getElementById('splashScreen');
+            if (!splash) return;
             if (sessionStorage.getItem('splashShown')) {
-                SS.hide({ fadeOutDuration: 0 });
+                splash.remove();
             } else {
                 sessionStorage.setItem('splashShown', '1');
-                setTimeout(() => SS.hide({ fadeOutDuration: 500 }), 3500);
+                // Fade out after 3.5s
+                setTimeout(() => {
+                    splash.style.transition = 'opacity 0.5s ease';
+                    splash.style.opacity = '0';
+                    setTimeout(() => splash.remove(), 550);
+                }, 3500);
             }
         })();
 

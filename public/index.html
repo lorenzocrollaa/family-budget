@@ -38,6 +38,11 @@
         <div class="phone-btn phone-power"></div>
         <div class="phone-screen-inner">
 
+        <!-- Web splash: covers login while LaunchScreen transitions to WebView -->
+        <div id="splashScreen" style="position:fixed;inset:0;z-index:99999;background:#2d0f63;">
+            <img src="img/splash_portrait.png" style="width:100%;height:100%;object-fit:cover;">
+        </div>
+
         <!-- iOS-style status bar -->
         <div class="phone-status-bar" id="phoneStatusBar">
             <div class="psb-time" id="psbTime">9:41</div>
