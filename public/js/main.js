@@ -18,21 +18,15 @@
         var currentTravelId = null;
         var currentDateFilter = null;
 
-        // Show splash only on true first open, not after logout (reload)
-        // Web splash: shown only on first open, not after logout
+        // Native splash: keep LaunchScreen visible until explicitly hidden
         (function() {
-            const splash = document.getElementById('splashScreen');
-            if (!splash) return;
+            const SS = window.Capacitor?.Plugins?.SplashScreen;
+            if (!SS) return;
             if (sessionStorage.getItem('splashShown')) {
-                splash.remove();
+                SS.hide({ fadeOutDuration: 0 });
             } else {
                 sessionStorage.setItem('splashShown', '1');
-                // Fade out after 3.5s
-                setTimeout(() => {
-                    splash.style.transition = 'opacity 0.5s ease';
-                    splash.style.opacity = '0';
-                    setTimeout(() => splash.remove(), 550);
-                }, 3500);
+                setTimeout(() => SS.hide({ fadeOutDuration: 500 }), 3500);
             }
         })();
 
