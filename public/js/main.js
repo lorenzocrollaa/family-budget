@@ -230,13 +230,13 @@
         }, { passive: true });
 
         // Collega i tap istantanei (no 300ms delay) agli elementi overlay
-        (function() {
-            const overlay  = document.getElementById('catFocusOverlay');
-            const pieBtn   = document.getElementById('pieCenterBtn');
-
+        // Wrapped in DOMContentLoaded: script loads before these elements exist in the DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            const overlay = document.getElementById('catFocusOverlay');
+            const pieBtn  = document.getElementById('pieCenterBtn');
             if (overlay) _fastTap(overlay, () => { window._catFocusClose && window._catFocusClose(); });
-            if (pieBtn) _fastTap(pieBtn, () => { window._pieOpenCategory && window._pieOpenCategory(); });
-        })();
+            if (pieBtn)  _fastTap(pieBtn,  () => { window._pieOpenCategory && window._pieOpenCategory(); });
+        });
 
         let chartInstance = null;
         var showAllTransactions = false;
