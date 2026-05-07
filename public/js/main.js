@@ -18,11 +18,18 @@
         var currentTravelId = null;
         var currentDateFilter = null;
 
-        // Remove splash after fade-out animation completes (3.5s delay + 0.5s fade)
-        setTimeout(() => {
+        // Show splash only on true first open, not after logout (reload)
+        (function() {
             const splash = document.getElementById('splashScreen');
-            if (splash) splash.remove();
-        }, 4100);
+            if (!splash) return;
+            if (sessionStorage.getItem('splashShown')) {
+                // After logout: remove immediately, no animation
+                splash.remove();
+            } else {
+                sessionStorage.setItem('splashShown', '1');
+                setTimeout(() => splash.remove(), 4100);
+            }
+        })();
 
         function haptic(type = 'light') {
             try {
@@ -495,16 +502,8 @@
             const password = document.getElementById('loginPassword').value;
             const btn = document.querySelector('.auth-btn-sub');
 
-            // Se Face ID è abilitato e i campi sono vuoti, tenta il riconoscimento
-            if (localStorage.getItem('faceIdEnabled') === 'true' && !email && !password) {
-                const didLogin = await handleBiometricLogin();
-                if (didLogin) return;
-                // Face ID fallito/annullato: l'utente compila email e password
-                showMessage('Face ID non riuscito. Inserisci email e password.', 'info');
-                return;
-            }
-
             if(!email || !password) {
+                haptic('error');
                 showMessage('Inserisci email e password', 'warning');
                 return;
             }
@@ -530,7 +529,7 @@
                     finishAuthentication();
                     showMessage('Accesso effettuato con successo!', 'success');
                 } else {
-                    // Feedback visivo immediato
+                    haptic('error');
                     btn.classList.add('btn-error-shake');
                     setTimeout(() => btn.classList.remove('btn-error-shake'), 500);
                     showMessage(result.error || 'Credenziali non valide. Riprova.', 'error');
@@ -681,7 +680,7 @@
                 const result = await NativeBiometric.isAvailable();
                 if (result.isAvailable) {
                     const bioBtn = document.getElementById('biometricBtn');
-                    if (bioBtn) bioBtn.style.display = 'none';
+                    if (bioBtn) bioBtn.style.display = 'block';
                 }
             } catch (e) {
                 console.log('Biometric check skipped:', e);

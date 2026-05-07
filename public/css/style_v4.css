@@ -950,7 +950,9 @@ input:focus, select:focus {
 #splashLogo {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    padding: 40px;
+    box-sizing: border-box;
     animation: splashLogoIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
