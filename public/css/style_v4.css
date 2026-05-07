@@ -945,14 +945,13 @@ input:focus, select:focus {
     align-items: center;
     justify-content: center;
     z-index: 10000;
-    animation: splashFadeOut 0.4s cubic-bezier(0.4, 0, 1, 1) 1.3s forwards;
+    animation: splashFadeOut 0.5s cubic-bezier(0.4, 0, 1, 1) 3.5s forwards;
 }
 #splashLogo {
-    width: 110px;
-    height: 110px;
-    border-radius: 24px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
-    animation: splashLogoIn 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    animation: splashLogoIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes fadeIn {

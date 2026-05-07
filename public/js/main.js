@@ -18,11 +18,11 @@
         var currentTravelId = null;
         var currentDateFilter = null;
 
-        // Remove splash after fade-out animation completes
+        // Remove splash after fade-out animation completes (3.5s delay + 0.5s fade)
         setTimeout(() => {
             const splash = document.getElementById('splashScreen');
             if (splash) splash.remove();
-        }, 1800);
+        }, 4100);
 
         function haptic(type = 'light') {
             try {
@@ -493,9 +493,17 @@
         async function handleLogin() {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
-            // Corretto il selettore per il tuo HTML
             const btn = document.querySelector('.auth-btn-sub');
-            
+
+            // Se Face ID è abilitato e i campi sono vuoti, tenta il riconoscimento
+            if (localStorage.getItem('faceIdEnabled') === 'true' && !email && !password) {
+                const didLogin = await handleBiometricLogin();
+                if (didLogin) return;
+                // Face ID fallito/annullato: l'utente compila email e password
+                showMessage('Face ID non riuscito. Inserisci email e password.', 'info');
+                return;
+            }
+
             if(!email || !password) {
                 showMessage('Inserisci email e password', 'warning');
                 return;
@@ -568,18 +576,18 @@
                         const profile = await response.json();
                         currentUser = profile.user;
                         finishAuthentication();
+                        return true;
                     } else {
-                        showMessage('Sessione scaduta. Effettua il login normale una volta per riattivare il Face ID.', 'info');
+                        showMessage('Sessione scaduta. Inserisci email e password.', 'info');
+                        return false;
                     }
                 } else {
                     showMessage('Effettua il login normale la prima volta per attivare il Face ID.', 'info');
+                    return false;
                 }
             } catch (e) {
                 console.error('Biometric error:', e);
-                // Non mostriamo errore se l'utente annulla
-                if (e.code !== "UserCancellation") {
-                    showMessage("Errore durante l'autenticazione biometrica.", "error");
-                }
+                return false;
             }
         }
             async function handleRegister() {
@@ -673,10 +681,7 @@
                 const result = await NativeBiometric.isAvailable();
                 if (result.isAvailable) {
                     const bioBtn = document.getElementById('biometricBtn');
-                    if (bioBtn) bioBtn.style.display = 'block';
-                    if (localStorage.getItem('faceIdEnabled') === 'true' && document.getElementById('authScreen').style.display !== 'none') {
-                        setTimeout(() => handleBiometricLogin(), 500);
-                    }
+                    if (bioBtn) bioBtn.style.display = 'none';
                 }
             } catch (e) {
                 console.log('Biometric check skipped:', e);
