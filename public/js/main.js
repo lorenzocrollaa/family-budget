@@ -2259,7 +2259,7 @@
 
             if (tabName === 'analysis') {
                 if (typeof analysisMonthlyData !== 'undefined' && analysisMonthlyData.length > 0) {
-                    requestAnimationFrame(() => { renderCurrentMonth(); if (!analysisOverviewChartInst) renderOverviewChart(); });
+                    requestAnimationFrame(() => { renderOverviewChart(); renderCurrentMonth(); });
                 } else {
                     loadAnalysisData();
                 }
@@ -3230,6 +3230,11 @@
         function renderOverviewChart() {
             const canvas = document.getElementById('analysisOverviewChart');
             if (!canvas) return;
+            // Destroy chart if it was rendered while tab was hidden (zero dimensions)
+            if (analysisOverviewChartInst && canvas.offsetWidth === 0) {
+                analysisOverviewChartInst.destroy();
+                analysisOverviewChartInst = null;
+            }
             Chart.defaults.color = isDarkMode() ? '#94a3b8' : '#1e293b';
             Chart.defaults.font.family = "'Inter', sans-serif";
 
