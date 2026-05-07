@@ -503,6 +503,7 @@
             document.getElementById('appContainer').style.display = 'none';
             document.getElementById('appTabBar').style.opacity = '0';
             document.getElementById('appTabBar').style.pointerEvents = 'none';
+            setTimeout(refreshIcons, 50); // render eye toggle icons
 
             // Restituisce una Promise che si risolverà solo al termine del login
             return new Promise((resolve) => {
@@ -716,6 +717,7 @@
             const tabBar = document.getElementById('appTabBar');
             if (tabBar) { tabBar.style.opacity = '0'; tabBar.style.pointerEvents = 'none'; }
             checkBiometric();
+            setTimeout(refreshIcons, 50);
         }
 
         function updateUserDisplay() {
@@ -3602,6 +3604,29 @@
                             _backgroundedAt = 0;
                         }
                     }
+                });
+            }
+
+            // Keyboard: scroll auth form so focused input is not hidden behind keyboard
+            const KB = window.Capacitor?.Plugins?.Keyboard;
+            if (KB) {
+                KB.addListener('keyboardWillShow', ({ keyboardHeight }) => {
+                    const authScreen = document.getElementById('authScreen');
+                    if (!authScreen || authScreen.style.display === 'none') return;
+                    authScreen.style.overflowY = 'auto';
+                    authScreen.style.paddingBottom = (keyboardHeight + 24) + 'px';
+                    setTimeout(() => {
+                        const active = document.activeElement;
+                        if (active && active.tagName === 'INPUT') {
+                            active.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }, 80);
+                });
+                KB.addListener('keyboardWillHide', () => {
+                    const authScreen = document.getElementById('authScreen');
+                    if (!authScreen) return;
+                    authScreen.style.overflowY = '';
+                    authScreen.style.paddingBottom = '';
                 });
             }
         });
