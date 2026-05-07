@@ -441,6 +441,8 @@
 
         function setAuthToken(token) {
             localStorage.setItem('authToken', token);
+            // Keep a separate copy that survives logout, for Face ID re-login
+            if (token) localStorage.setItem('faceIdToken', token);
         }
 
         let authResolve = null;
@@ -565,19 +567,19 @@
                 });
 
                 // Se verificato, cerchiamo di recuperare il token salvato o chiediamo login normale se è la prima volta
-                const savedToken = localStorage.getItem('authToken');
+                const savedToken = localStorage.getItem('faceIdToken') || localStorage.getItem('authToken');
                 if (savedToken) {
-                    // Verifichiamo il token col server
                     const response = await fetch(API_BASE + '/api/auth/profile', {
                         headers: { 'Authorization': 'Bearer ' + savedToken }
                     });
                     if (response.ok) {
                         const profile = await response.json();
                         currentUser = profile.user;
+                        setAuthToken(savedToken);
                         finishAuthentication();
                         return true;
                     } else {
-                        showMessage('Sessione scaduta. Inserisci email e password.', 'info');
+                        showMessage('Sessione scaduta. Accedi con email e password per riattivare il Face ID.', 'info');
                         return false;
                     }
                 } else {
