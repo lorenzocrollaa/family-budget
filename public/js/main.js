@@ -19,14 +19,17 @@
         var currentDateFilter = null;
 
         // Show splash only on true first open, not after logout (reload)
+        // _splashEndTime: timestamp (ms) when splash finishes. 0 = no splash (after logout).
+        window._splashEndTime = 0;
         (function() {
             const splash = document.getElementById('splashScreen');
             if (!splash) return;
             if (sessionStorage.getItem('splashShown')) {
-                // After logout: remove immediately, no animation
                 splash.remove();
+                // No splash shown — auth screen can appear immediately
             } else {
                 sessionStorage.setItem('splashShown', '1');
+                window._splashEndTime = performance.now() + 4000;
                 setTimeout(() => splash.remove(), 4100);
             }
         })();
@@ -481,8 +484,7 @@
             console.log('🔐 Utente non autenticato. Mostro blocco login...');
             const authEl = document.getElementById('authScreen');
             authEl.style.display = 'flex';
-            // Fade in after splash (4s total). If splash already gone, show immediately.
-            const splashDelay = Math.max(0, 4000 - performance.now());
+            const splashDelay = Math.max(0, window._splashEndTime - performance.now());
             setTimeout(() => {
                 authEl.style.opacity = '1';
                 authEl.style.pointerEvents = '';
