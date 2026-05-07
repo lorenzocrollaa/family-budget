@@ -644,8 +644,6 @@
             document.dispatchEvent(new CustomEvent('userLoaded', { detail: currentUser }));
             document.getElementById('authScreen').style.display = 'none';
             document.getElementById('appContainer').style.display = 'block';
-            document.getElementById('appTabBar').style.opacity = '1';
-            document.getElementById('appTabBar').style.pointerEvents = '';
 
             if(authResolve) {
                 const token = getAuthToken();
@@ -937,10 +935,10 @@
                         }
                     }
                     
-                    // Load everything first, then switch when ready
-                    await updateStatsFromAPI();       // starts balance animation (_balAnimEndTime set)
-                    await updateTransactionsFromAPI();
+                    // Load data in parallel, then switch when ready
+                    await Promise.all([updateStatsFromAPI(), updateTransactionsFromAPI()]);
                     showDateFilter();
+                    loadAnalysisData(); // preload analysis in background
 
                     haptic('success');
                     const successMsg = `✅ ${successfulFiles}/${processedFiles.length} file processati con successo!`;
@@ -1816,10 +1814,9 @@
 
             currentDateFilter = { from, to };
             _invalidateAnalysisCache();
-            await updateStatsFromAPI();
-            await updateTransactionsFromAPI();
+            await Promise.all([updateStatsFromAPI(), updateTransactionsFromAPI()]);
             drawPieChart(); drawMiniCharts();
-            await loadAnalysisData();
+            loadAnalysisData(); // preload in background, don't block home
         }
 
         async function clearDateFilter() {
@@ -3074,9 +3071,6 @@
                 
                 document.getElementById('authScreen').style.display = 'none';
                 document.getElementById('appContainer').style.display = 'block';
-                document.getElementById('appTabBar').style.opacity = '1';
-                document.getElementById('appTabBar').style.pointerEvents = '';
-                
 
                 await initializeApplicationData();
             } catch (error) {
@@ -3105,9 +3099,16 @@
 
                 // Start periodic coin bursts from the pig
                 startCoinBursts();
+
+                // Show tab bar now that data is ready (tab bar + content appear together)
+                const tabBar = document.getElementById('appTabBar');
+                if (tabBar) { tabBar.style.opacity = '1'; tabBar.style.pointerEvents = ''; }
             } catch (error) {
                 console.error('Errore inizializzazione dati:', error);
                 showMessage('Errore durante il caricamento dei dati.', 'error');
+                // Show tab bar anyway so the user isn't stuck
+                const tabBar = document.getElementById('appTabBar');
+                if (tabBar) { tabBar.style.opacity = '1'; tabBar.style.pointerEvents = ''; }
             }
         }
 
