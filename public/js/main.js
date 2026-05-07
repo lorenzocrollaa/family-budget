@@ -734,6 +734,9 @@
             document.getElementById('appContainer').style.display = 'none';
             const tabBar = document.getElementById('appTabBar');
             if (tabBar) { tabBar.style.opacity = '0'; tabBar.style.pointerEvents = 'none'; }
+            ['loginEmail','loginPassword','registerName','registerEmail','registerPassword'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.value = '';
+            });
             checkBiometric();
             setTimeout(refreshIcons, 50);
         }
