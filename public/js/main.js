@@ -53,6 +53,22 @@
             if (svg) svg.innerHTML = show ? _svgEyeOff : _svgEye;
         }
 
+        // Return key on any input dismisses keyboard (and submits auth forms)
+        document.addEventListener('keydown', function(e) {
+            if (e.key !== 'Enter') return;
+            const active = document.activeElement;
+            if (!active || active.tagName !== 'INPUT') return;
+            const id = active.id;
+            if (id === 'loginEmail') { document.getElementById('loginPassword')?.focus(); return; }
+            if (id === 'loginPassword') { active.blur(); handleLogin(); return; }
+            if (id === 'registerName') { document.getElementById('registerEmail')?.focus(); return; }
+            if (id === 'registerEmail') { document.getElementById('registerPassword')?.focus(); return; }
+            if (id === 'registerPassword') { active.blur(); handleRegister(); return; }
+            active.blur();
+            const KB = window.Capacitor?.Plugins?.Keyboard;
+            if (KB) KB.hide();
+        });
+
         // Dismiss keyboard when tapping outside an input anywhere in the app
         document.addEventListener('touchend', function(e) {
             if (!e.target.closest('input, textarea, select, button, [contenteditable]')) {
