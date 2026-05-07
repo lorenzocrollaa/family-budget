@@ -18,6 +18,12 @@
         var currentTravelId = null;
         var currentDateFilter = null;
 
+        // Remove splash after fade-out animation completes
+        setTimeout(() => {
+            const splash = document.getElementById('splashScreen');
+            if (splash) splash.remove();
+        }, 1800);
+
         function haptic(type = 'light') {
             try {
                 const H = window.Capacitor?.Plugins?.Haptics;
