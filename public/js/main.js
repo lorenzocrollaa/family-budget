@@ -42,13 +42,15 @@
             } catch (e) {}
         }
 
+        const _svgEye = '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>';
+        const _svgEyeOff = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
         function togglePasswordVisibility(inputId, btn) {
             const inp = document.getElementById(inputId);
             if (!inp) return;
             const show = inp.type === 'password';
             inp.type = show ? 'text' : 'password';
-            const icon = btn.querySelector('i[data-lucide]');
-            if (icon) { icon.setAttribute('data-lucide', show ? 'eye-off' : 'eye'); refreshIcons(); }
+            const svg = btn.querySelector('svg');
+            if (svg) svg.innerHTML = show ? _svgEyeOff : _svgEye;
         }
 
         // Dismiss keyboard when tapping outside an input anywhere in the app
@@ -3607,22 +3609,20 @@
                 });
             }
 
-            // Keyboard: scroll auth form so focused input is not hidden behind keyboard
+            // Keyboard: scroll auth form so focused input stays visible (fires after animation ends)
             const KB = window.Capacitor?.Plugins?.Keyboard;
             if (KB) {
-                KB.addListener('keyboardWillShow', ({ keyboardHeight }) => {
+                KB.addListener('keyboardDidShow', ({ keyboardHeight }) => {
                     const authScreen = document.getElementById('authScreen');
                     if (!authScreen || authScreen.style.display === 'none') return;
                     authScreen.style.overflowY = 'auto';
-                    authScreen.style.paddingBottom = (keyboardHeight + 24) + 'px';
-                    setTimeout(() => {
-                        const active = document.activeElement;
-                        if (active && active.tagName === 'INPUT') {
-                            active.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }
-                    }, 80);
+                    authScreen.style.paddingBottom = keyboardHeight + 'px';
+                    const active = document.activeElement;
+                    if (active && active.tagName === 'INPUT') {
+                        active.scrollIntoView({ behavior: 'instant', block: 'center' });
+                    }
                 });
-                KB.addListener('keyboardWillHide', () => {
+                KB.addListener('keyboardDidHide', () => {
                     const authScreen = document.getElementById('authScreen');
                     if (!authScreen) return;
                     authScreen.style.overflowY = '';
