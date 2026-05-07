@@ -692,7 +692,11 @@
             stopCoinBursts();
             localStorage.removeItem('authToken');
             currentUser = null;
-            window.location.reload();
+            document.getElementById('authScreen').style.display = 'flex';
+            document.getElementById('appContainer').style.display = 'none';
+            const tabBar = document.getElementById('appTabBar');
+            if (tabBar) { tabBar.style.opacity = '0'; tabBar.style.pointerEvents = 'none'; }
+            checkBiometric();
         }
 
         function updateUserDisplay() {
