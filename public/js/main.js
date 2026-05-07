@@ -19,18 +19,15 @@
         var currentDateFilter = null;
 
         // Show splash only on true first open, not after logout (reload)
-        // _splashEndTime: timestamp (ms) when splash finishes. 0 = no splash (after logout).
-        window._splashEndTime = 0;
+        // Native splash screen: hide after 3.5s with fade (only on first open)
         (function() {
-            const splash = document.getElementById('splashScreen');
-            if (!splash) return;
+            const SS = window.Capacitor?.Plugins?.SplashScreen;
+            if (!SS) return;
             if (sessionStorage.getItem('splashShown')) {
-                splash.remove();
-                // No splash shown — auth screen can appear immediately
+                SS.hide({ fadeOutDuration: 0 });
             } else {
                 sessionStorage.setItem('splashShown', '1');
-                window._splashEndTime = performance.now() + 4000;
-                setTimeout(() => splash.remove(), 4100);
+                setTimeout(() => SS.hide({ fadeOutDuration: 500 }), 3500);
             }
         })();
 
