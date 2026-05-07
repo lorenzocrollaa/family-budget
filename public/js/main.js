@@ -17,6 +17,19 @@
         };
         var currentTravelId = null;
         var currentDateFilter = null;
+
+        function haptic(type = 'light') {
+            try {
+                const H = window.Capacitor?.Plugins?.Haptics;
+                if (!H) return;
+                if (type === 'success') H.notification({ type: 'SUCCESS' });
+                else if (type === 'warning') H.notification({ type: 'WARNING' });
+                else if (type === 'error') H.notification({ type: 'ERROR' });
+                else if (type === 'medium') H.impact({ style: 'MEDIUM' });
+                else H.impact({ style: 'LIGHT' });
+            } catch (e) {}
+        }
+
         let _balAnimFrame = null;
         let _balCurrent = 0;
         let _balAnimEndTime = 0;
@@ -240,7 +253,7 @@
 
                 const close = result => { overlay.remove(); resolve(result); };
                 card.querySelector('.sc-cancel').onclick = () => close(false);
-                card.querySelector('.sc-ok').onclick = () => close(true);
+                card.querySelector('.sc-ok').onclick = () => { haptic('medium'); close(true); };
                 overlay.onclick = e => { if (e.target === overlay) close(false); };
             });
         }
@@ -914,6 +927,7 @@
                     await updateTransactionsFromAPI();
                     showDateFilter();
 
+                    haptic('success');
                     const successMsg = `✅ ${successfulFiles}/${processedFiles.length} file processati con successo!`;
                     showMessage(successMsg, 'success');
                     showMessage(`Sono state aggiunte ${totalTransactions} nuove transazioni.`, 'success');
@@ -1451,6 +1465,7 @@
                     showMessage(`Categoria cambiata in "${newCategory}"!`, 'success');
                 }
 
+                haptic('success');
                 await updateTransactionsFromAPI();
                 await updateStatsFromAPI();
 
@@ -2191,6 +2206,7 @@
 
         function switchTab(tabName) {
             console.log('🔄 Switching to tab:', tabName);
+            haptic('light');
 
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => {

@@ -845,6 +845,8 @@ input:focus, select:focus {
     position: relative;
     max-height: 90vh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
     animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     margin: 40px auto;
     color: var(--text-main);
@@ -2307,6 +2309,8 @@ body {
     bottom: 78px !important; /* tab bar height */
     overflow-y: auto !important;
     overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
     scrollbar-width: none;
     background-color: var(--bg-deep);
     padding-top: 60px !important;
