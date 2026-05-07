@@ -3527,4 +3527,50 @@
             }
             updateStatusBarTime();
             setInterval(updateStatusBarTime, 30000);
+
+            // Background timeout + privacy blur
+            const CapApp = window.Capacitor?.Plugins?.App;
+            if (CapApp) {
+                const TIMEOUT_MS = 2 * 60 * 1000;
+                let _backgroundedAt = 0;
+                const privacyOverlay = document.getElementById('privacyOverlay');
+                const timeoutSplash = document.getElementById('timeoutSplash');
+
+                CapApp.addListener('appStateChange', ({ isActive }) => {
+                    if (!isActive) {
+                        _backgroundedAt = Date.now();
+                        if (privacyOverlay) privacyOverlay.style.display = 'block';
+                    } else {
+                        if (privacyOverlay) privacyOverlay.style.display = 'none';
+
+                        if (_backgroundedAt && (Date.now() - _backgroundedAt) > TIMEOUT_MS) {
+                            _backgroundedAt = 0;
+                            // Show timeout splash over the login screen while we reset state
+                            if (timeoutSplash) timeoutSplash.style.display = 'block';
+                            // Soft logout: clear token, reset UI to login screen
+                            stopCoinBursts();
+                            localStorage.removeItem('authToken');
+                            currentUser = null;
+                            document.getElementById('authScreen').style.display = 'flex';
+                            document.getElementById('appContainer').style.display = 'none';
+                            const tabBar = document.getElementById('appTabBar');
+                            if (tabBar) { tabBar.style.opacity = '0'; tabBar.style.pointerEvents = 'none'; }
+                            checkBiometric();
+                            // Fade out splash after 1.5s to reveal login screen
+                            setTimeout(() => {
+                                if (!timeoutSplash) return;
+                                timeoutSplash.style.transition = 'opacity 0.5s ease';
+                                timeoutSplash.style.opacity = '0';
+                                setTimeout(() => {
+                                    timeoutSplash.style.display = 'none';
+                                    timeoutSplash.style.opacity = '1';
+                                    timeoutSplash.style.transition = '';
+                                }, 500);
+                            }, 1500);
+                        } else {
+                            _backgroundedAt = 0;
+                        }
+                    }
+                });
+            }
         });
