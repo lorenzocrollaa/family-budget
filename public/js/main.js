@@ -1,4 +1,5 @@
-        var API_BASE = (window.location.protocol === 'capacitor:' || window.location.protocol === 'ionic:')
+        var API_BASE = (window.location.protocol === 'capacitor:' || window.location.protocol === 'ionic:'
+            || (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform()))
             ? 'https://family-budget-production-2924.up.railway.app'
             : '';
         var userEmail = 'demo@famiglia.it';
