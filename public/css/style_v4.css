@@ -2309,7 +2309,7 @@ body {
     border-radius: 0 !important;
     border-top: 1px solid rgba(255,255,255,0.07) !important;
     border-left: none !important; border-right: none !important; border-bottom: none !important;
-    padding: 8px 4px calc(env(safe-area-inset-bottom, 0px) + 2px) 4px !important;
+    padding: 4px 4px calc(env(safe-area-inset-bottom, 0px) + 2px) 4px !important;
     gap: 2px !important;
     background: rgba(9,9,11,0.96) !important;
     box-shadow: 0 -1px 0 rgba(255,255,255,0.04) !important;
@@ -2322,21 +2322,21 @@ body {
 #appTabBar .tab {
     min-width: 0 !important;
     flex: 1;
-    padding: 14px 2px !important;
-    font-size: 12px !important;
-    gap: 6px !important;
+    padding: 8px 2px !important;
+    font-size: 10px !important;
+    gap: 4px !important;
     border-radius: 10px !important;
 }
 
 #appTabBar .tab > div:first-child { font-size: 0; line-height: 1; }
 #appTabBar .tab > div:first-child svg,
-#appTabBar .tab > div:first-child i { width: 26px !important; height: 26px !important; }
+#appTabBar .tab > div:first-child i { width: 22px !important; height: 22px !important; }
 
 #appTabBar .tab.tab-upload {
-    width: 52px !important; height: 52px !important;
-    min-width: 52px !important; flex: 0 0 52px;
-    margin-top: 4px !important;
-    border-radius: 18px !important;
+    width: 44px !important; height: 44px !important;
+    min-width: 44px !important; flex: 0 0 44px;
+    margin-top: 0px !important;
+    border-radius: 15px !important;
     padding: 0 !important;
 }
 
@@ -2410,7 +2410,7 @@ body {
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
-    bottom: 78px !important; /* tab bar height */
+    bottom: 62px !important; /* tab bar height */
     overflow-y: auto !important;
     overflow-x: hidden !important;
     scrollbar-width: none;
