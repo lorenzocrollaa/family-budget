@@ -26,6 +26,20 @@ function loadPlaidScript() {
     });
 }
 
+async function bankFetch(url, options = {}) {
+    const token = getAuthToken();
+    const opts = { ...options, headers: { 'Authorization': `Bearer ${token}`, ...options.headers } };
+    let response = await fetch(url, opts);
+    if ((response.status === 401 || response.status === 403) && !opts._retry) {
+        localStorage.removeItem('authToken');
+        const newToken = await ensureAuthenticated();
+        opts.headers['Authorization'] = `Bearer ${newToken}`;
+        opts._retry = true;
+        response = await fetch(url, opts);
+    }
+    return response;
+}
+
 // Inizializzazione al caricamento
 document.addEventListener('DOMContentLoaded', () => {
     try {
@@ -46,7 +60,6 @@ async function showBankSelector() {
         // Carica (o attendi) lo script Plaid prima di usarlo
         await loadPlaidScript();
 
-        const token = getAuthToken();
         const btn = document.querySelector('button[onclick="showBankSelector()"]');
         if(btn) {
             btn.disabled = true;
@@ -54,12 +67,9 @@ async function showBankSelector() {
         }
 
         // 1. Chiedi al backend un Link Token
-        const response = await fetch(API_BASE + '/api/bank/create-link-token', {
+        const response = await bankFetch(API_BASE + '/api/bank/create-link-token', {
             method: 'POST',
-            headers: { 
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json' 
-            }
+            headers: { 'Content-Type': 'application/json' }
         });
         
         const result = await response.json();
@@ -78,13 +88,10 @@ async function showBankSelector() {
                     showMessage('🔗 Connessione riuscita, salvataggio dati...', 'info');
                     
                     // 3. Invia public_token al nostro backend per ottenere access_token
-                    const exchangeRes = await fetch(API_BASE + '/api/bank/exchange-public-token', {
+                    const exchangeRes = await bankFetch(API_BASE + '/api/bank/exchange-public-token', {
                         method: 'POST',
-                        headers: { 
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json' 
-                        },
-                        body: JSON.stringify({ 
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
                             public_token: public_token,
                             institution_id: metadata.institution ? metadata.institution.institution_id : null,
                             institution_name: metadata.institution ? metadata.institution.name : null
@@ -96,7 +103,7 @@ async function showBankSelector() {
                         showMessage('🏦 Banca collegata! Avvio prima sincronizzazione...', 'info');
                         await loadBankAccounts();
                         // Auto-sync: recupera subito i movimenti per i nuovi conti
-                        const accountsRes = await fetch(API_BASE + '/api/bank/accounts', { headers: { 'Authorization': `Bearer ${token}` } });
+                        const accountsRes = await bankFetch(API_BASE + '/api/bank/accounts');
                         const accountsData = await accountsRes.json();
                         if (accountsData.success) {
                             const newAccounts = accountsData.data.filter(a => !a.lastSync);
@@ -140,11 +147,7 @@ async function loadBankAccounts() {
     listEl.innerHTML = '<div style="text-align: center; padding: 30px; opacity: 0.6;"><div class="spinner-wheel" style="margin: 0 auto 15px;"></div>Caricamento conti...</div>';
 
     try {
-        const token = getAuthToken();
-        const response = await fetch(API_BASE + '/api/bank/accounts', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
+        const response = await bankFetch(API_BASE + '/api/bank/accounts');
         const result = await response.json();
         if (result.success) {
             renderAccounts(result.data);
@@ -331,10 +334,8 @@ async function disconnectConnection(connectionId, btn) {
         btn.innerHTML = '<div class="spinner-wheel-small" style="display:inline-block; margin-right: 8px;"></div> Rimozione...';
         
         try {
-            const token = getAuthToken();
-            const response = await fetch(API_BASE + `/api/bank/connections/${connectionId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
+            const response = await bankFetch(API_BASE + `/api/bank/connections/${connectionId}`, {
+                method: 'DELETE'
             });
             
             const result = await response.json();
@@ -366,30 +367,22 @@ async function toggleAccountVisibility(accountId, btn) {
         const willEnable = originalLucide === 'eye-off';
         
         try {
-            const token = getAuthToken();
-            
             if (willEnable) {
                 const choice = await openSyncConfirmModal();
                 if (choice === 'cancel') {
                     btn.disabled = false;
                     return;
                 }
-                
-                await fetch(API_BASE + `/api/bank/accounts/${accountId}/toggle`, {
-                    method: 'PATCH',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
+
+                await bankFetch(API_BASE + `/api/bank/accounts/${accountId}/toggle`, { method: 'PATCH' });
+
                 if (choice === 'sync') {
                     await syncAccount(accountId, null);
                 } else {
                     showMessage('✅ Conto abilitato in stato "Pronto"', 'success');
                 }
             } else {
-                await fetch(API_BASE + `/api/bank/accounts/${accountId}/toggle`, {
-                    method: 'PATCH',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                await bankFetch(API_BASE + `/api/bank/accounts/${accountId}/toggle`, { method: 'PATCH' });
                 showMessage('✅ Conto nascosto', 'success');
 
                 // ✅ Se il conto che stiamo nascondendo era quello attualmente visualizzato,
@@ -457,19 +450,13 @@ async function syncAllConnectedAccounts(btn) {
         btn.innerHTML = '<div class="spinner-wheel-small" style="display:inline-block; margin-right: 8px;"></div> Aggiornamento...';
         
         try {
-            const token = getAuthToken();
-            const response = await fetch(API_BASE + '/api/bank/accounts', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const response = await bankFetch(API_BASE + '/api/bank/accounts');
             const data = await response.json();
-            
+
             if (data.success) {
                 const connectedAccounts = data.data.filter(a => a.isEnabled && a.isConnected);
-                const syncPromises = connectedAccounts.map(acc => 
-                    fetch(API_BASE + `/api/bank/sync/${acc.id}`, {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    })
+                const syncPromises = connectedAccounts.map(acc =>
+                    bankFetch(API_BASE + `/api/bank/sync/${acc.id}`, { method: 'POST' })
                 );
                 
                 await Promise.all(syncPromises);
@@ -507,11 +494,7 @@ async function syncAccount(accountId, btn) {
     }
     
     try {
-        const token = getAuthToken();
-        const response = await fetch(API_BASE + `/api/bank/sync/${accountId}`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const response = await bankFetch(API_BASE + `/api/bank/sync/${accountId}`, { method: 'POST' });
         
         const result = await response.json();
         if (result.success) {
@@ -561,11 +544,7 @@ async function syncAccount(accountId, btn) {
  */
 async function startUpdateMode(accountId) {
     try {
-        const token = getAuthToken();
-        const response = await fetch(API_BASE + `/api/bank/create-update-link-token/${accountId}`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const response = await bankFetch(API_BASE + `/api/bank/create-update-link-token/${accountId}`, { method: 'POST' });
         const data = await response.json();
         
         if (!data.success) {
@@ -614,11 +593,7 @@ async function refreshAccountBalance(accountId, btn) {
     }
 
     try {
-        const token = getAuthToken();
-        const response = await fetch(API_BASE + `/api/bank/balance/${accountId}`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const response = await bankFetch(API_BASE + `/api/bank/balance/${accountId}`, { method: 'POST' });
 
         const result = await response.json();
         if (result.success) {

@@ -56,7 +56,7 @@ app.use(cors({
     if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
       return callback(null, true);
     }
-    return callback(null, true); // Fallback to true for easier native testing, change to error in strict production
+    return callback(new Error('Origin not allowed'));
   },
   credentials: true
 }));
@@ -78,6 +78,14 @@ const uploadLimiter = rateLimit({
   }
 });
 
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'development' ? 100 : 10,
+  message: { error: 'Troppi tentativi di accesso, riprova tra 15 minuti' }
+});
+
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
 app.use('/api/', limiter);
 app.use('/api/transactions/upload', uploadLimiter);
 

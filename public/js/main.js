@@ -795,7 +795,7 @@
             }
         }
 
-        async function apiCall(endpoint, options = {}) {
+        async function apiCall(endpoint, options = {}, _retry = false) {
             const token = await ensureAuthenticated();
             const defaultOptions = {
                 headers: {
@@ -812,8 +812,9 @@
 
             if (!response.ok) {
                 if (response.status === 401 || response.status === 403) {
+                    if (_retry) throw new Error('Sessione scaduta. Effettua il login.');
                     localStorage.removeItem('authToken');
-                    return apiCall(endpoint, options);
+                    return apiCall(endpoint, options, true);
                 }
                 const errorData = await response.text();
                 throw new Error(`API Error ${response.status}: ${errorData}`);
