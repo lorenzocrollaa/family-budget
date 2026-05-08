@@ -2283,13 +2283,36 @@
             const targetTab = document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`);
             const targetContent = document.getElementById(tabName + 'Tab');
 
-            if (targetTab) targetTab.classList.add('active');
+            if (targetTab) {
+                targetTab.classList.add('active');
+                targetTab.classList.remove('tab-icon-pop');
+                void targetTab.offsetWidth; // force reflow to restart animation
+                targetTab.classList.add('tab-icon-pop');
+                setTimeout(() => targetTab.classList.remove('tab-icon-pop'), 400);
+                updateTabIndicator(targetTab, tabName);
+            }
             if (targetContent) {
                 targetContent.classList.add('active');
                 targetContent.style.display = 'block';
                 _onTabVisible(tabName);
                 return;
             }
+        }
+
+        function updateTabIndicator(activeBtn, tabName) {
+            const bar = document.getElementById('appTabBar');
+            const indicator = document.getElementById('tabIndicator');
+            if (!bar || !indicator || !activeBtn) return;
+            if (tabName === 'upload') {
+                indicator.style.opacity = '0';
+                return;
+            }
+            indicator.style.opacity = '1';
+            const barRect = bar.getBoundingClientRect();
+            const btnRect = activeBtn.getBoundingClientRect();
+            const offset = btnRect.left - barRect.left;
+            indicator.style.width = btnRect.width + 'px';
+            indicator.style.transform = 'translateX(' + offset + 'px)';
         }
 
         function _onTabVisible(tabName) {
@@ -3156,13 +3179,27 @@
 
                 // Show tab bar now that data is ready (tab bar + content appear together)
                 const tabBar = document.getElementById('appTabBar');
-                if (tabBar) { tabBar.style.opacity = '1'; tabBar.style.pointerEvents = ''; }
+                if (tabBar) {
+                    tabBar.style.opacity = '1';
+                    tabBar.style.pointerEvents = '';
+                    requestAnimationFrame(() => {
+                        const homeBtn = tabBar.querySelector('.tab.active');
+                        if (homeBtn) updateTabIndicator(homeBtn, 'home');
+                    });
+                }
             } catch (error) {
                 console.error('Errore inizializzazione dati:', error);
                 showMessage('Errore durante il caricamento dei dati.', 'error');
                 // Show tab bar anyway so the user isn't stuck
                 const tabBar = document.getElementById('appTabBar');
-                if (tabBar) { tabBar.style.opacity = '1'; tabBar.style.pointerEvents = ''; }
+                if (tabBar) {
+                    tabBar.style.opacity = '1';
+                    tabBar.style.pointerEvents = '';
+                    requestAnimationFrame(() => {
+                        const homeBtn = tabBar.querySelector('.tab.active');
+                        if (homeBtn) updateTabIndicator(homeBtn, 'home');
+                    });
+                }
             }
         }
 
