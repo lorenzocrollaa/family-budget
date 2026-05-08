@@ -46,8 +46,10 @@ app.use(compression());
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   'http://localhost:3000',
-  'http://localhost:8081', // React Native Metro bundler
-];
+  'http://localhost:8081',
+  'capacitor://localhost',  // iOS Capacitor WebView
+  'http://localhost',       // Android Capacitor WebView
+].filter(Boolean);
 
 app.use(cors({
   origin: function (origin, callback) {
