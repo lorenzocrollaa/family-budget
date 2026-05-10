@@ -810,6 +810,7 @@
 
     <!-- Bulk Edit Action Bar -->
     <div id="bulkActionBar" class="bulk-action-bar">
+        <button class="bulk-close-btn" onclick="clearSelection()">×</button>
         <div class="bulk-count">
             <span class="badge" id="bulkCountBadge">0</span> transazioni selezionate
         </div>
@@ -819,9 +820,6 @@
             </button>
             <button class="btn" onclick="openBulkTravelModal()" style="background: linear-gradient(135deg, #667eea, #764ba2); border: none;">
                 <i data-lucide="plane"></i> Viaggio
-            </button>
-            <button class="btn btn-neutral" onclick="clearSelection()" style="flex: 0.4;">
-                X
             </button>
         </div>
     </div>
