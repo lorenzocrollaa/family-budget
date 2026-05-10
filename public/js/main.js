@@ -1738,7 +1738,7 @@
                 if (_catDetailCache[cacheKey]) {
                     const { transactions, stats } = _catDetailCache[cacheKey];
                     document.getElementById('modalCategoryAmount').textContent = formatAmount(stats.total);
-                    document.getElementById('categoryModal').style.display = 'block';
+                    document.getElementById('categoryModal').style.display = 'flex';
                     setTimeout(refreshIcons, 10);
                     _renderCategoryTransactions(categoryName, transactions, stats);
                     return;
@@ -1756,7 +1756,7 @@
                     </div>`
                 ).join('');
                 document.getElementById('categoryTransactions').innerHTML = skeletonHTML;
-                document.getElementById('categoryModal').style.display = 'block';
+                document.getElementById('categoryModal').style.display = 'flex';
                 setTimeout(refreshIcons, 10);
 
                 let url = `/api/transactions/category-details/${encodeURIComponent(categoryName)}`;
@@ -3306,6 +3306,9 @@
             const m = analysisMonthlyData[analysisCurrentIndex];
             const label = formatMonthLabel(m.month);
 
+            const catInfo = document.getElementById('analysisCatInfo');
+            if (catInfo) catInfo.style.display = 'none';
+
             document.getElementById('analysisMonthLabel').textContent = label;
             document.getElementById('analysisCategoryMonthLabel').textContent = label;
             document.getElementById('analysisIncome').textContent = formatAmount(m.income);
@@ -3463,11 +3466,14 @@
                         }
                     },
                     onClick: (event, elements) => {
-                        if (elements.length > 0) {
-                            const index = elements[0].index;
-                            const categoryName = categories[index].name;
-                            showCategoryDetails(categoryName);
-                        }
+                        const infoBox = document.getElementById('analysisCatInfo');
+                        if (!infoBox) return;
+                        if (elements.length === 0) { infoBox.style.display = 'none'; return; }
+                        const cat = categories[elements[0].index];
+                        document.getElementById('analysisCatDot').style.background = cat.color || 'var(--accent-primary)';
+                        document.getElementById('analysisCatName').textContent = cat.name;
+                        document.getElementById('analysisCatAmount').textContent = formatAmount(cat.amount) + (cat.count ? `  ·  ${cat.count} transazion${cat.count === 1 ? 'e' : 'i'}` : '');
+                        infoBox.style.display = 'flex';
                     },
                     scales: {
                         x: { 
