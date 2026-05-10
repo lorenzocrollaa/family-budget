@@ -694,6 +694,17 @@
             document.getElementById('authScreen').style.display = 'none';
             document.getElementById('appContainer').style.display = 'block';
 
+            // Show tab bar immediately — don't wait for data to load
+            const tabBarEl = document.getElementById('appTabBar');
+            if (tabBarEl) {
+                tabBarEl.style.opacity = '1';
+                tabBarEl.style.pointerEvents = '';
+                requestAnimationFrame(() => {
+                    const homeBtn = tabBarEl.querySelector('.tab.active');
+                    if (homeBtn) updateTabIndicator(homeBtn, 'home');
+                });
+            }
+
             if(authResolve) {
                 const token = getAuthToken();
                 authResolve(token);
@@ -3176,30 +3187,9 @@
 
                 // Start periodic coin bursts from the pig
                 startCoinBursts();
-
-                // Show tab bar now that data is ready (tab bar + content appear together)
-                const tabBar = document.getElementById('appTabBar');
-                if (tabBar) {
-                    tabBar.style.opacity = '1';
-                    tabBar.style.pointerEvents = '';
-                    requestAnimationFrame(() => {
-                        const homeBtn = tabBar.querySelector('.tab.active');
-                        if (homeBtn) updateTabIndicator(homeBtn, 'home');
-                    });
-                }
             } catch (error) {
                 console.error('Errore inizializzazione dati:', error);
                 showMessage('Errore durante il caricamento dei dati.', 'error');
-                // Show tab bar anyway so the user isn't stuck
-                const tabBar = document.getElementById('appTabBar');
-                if (tabBar) {
-                    tabBar.style.opacity = '1';
-                    tabBar.style.pointerEvents = '';
-                    requestAnimationFrame(() => {
-                        const homeBtn = tabBar.querySelector('.tab.active');
-                        if (homeBtn) updateTabIndicator(homeBtn, 'home');
-                    });
-                }
             }
         }
 
