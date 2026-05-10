@@ -2424,12 +2424,30 @@
                 });
 
                 if (result.success) {
-                    showMessage(currentTravelId ? 'Viaggio aggiornato!' : 'Viaggio creato!', 'success');
+                    const isNew = !currentTravelId;
+                    showMessage(isNew ? 'Viaggio creato!' : 'Viaggio aggiornato!', 'success');
                     closeTravelModal();
                     await loadTravels();
-                    
-                    if (currentTravelId) {
-                        // Se stavamo guardando i dettagli, rinfrescali
+
+                    if (isNew && window._pendingTravelTransactionIds && window._pendingTravelTransactionIds.length > 0) {
+                        // Auto-assign selected transactions to the newly created travel
+                        const newTravelId = result.data.id;
+                        const pendingIds = window._pendingTravelTransactionIds;
+                        window._pendingTravelTransactionIds = null;
+                        try {
+                            const assignResult = await apiCall(`/api/travels/${newTravelId}/transactions`, {
+                                method: 'POST',
+                                body: JSON.stringify({ transactionIds: pendingIds })
+                            });
+                            if (assignResult.success) {
+                                showMessage(`${pendingIds.length} transazion${pendingIds.length === 1 ? 'e aggiunta' : 'i aggiunte'} a "${result.data.destination}"!`, 'success');
+                                clearSelection();
+                                await loadTravels();
+                            }
+                        } catch (e) {
+                            console.error('Error auto-assigning transactions:', e);
+                        }
+                    } else if (!isNew) {
                         showTravelDetails(currentTravelId);
                     }
                 }
@@ -2681,6 +2699,13 @@
 
         function closeSelectTravelModal() {
             document.getElementById('selectTravelModal').style.display = 'none';
+        }
+
+        // Opens travel creation modal keeping the pending selected transactions in memory
+        function openTravelCreationFromSelection() {
+            window._pendingTravelTransactionIds = Array.from(window.selectedTransactions);
+            closeSelectTravelModal();
+            showTravelModal();
         }
 
         async function addSelectedToTravel(travelId) {
