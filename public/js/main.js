@@ -2484,10 +2484,10 @@
                                 display: flex;
                                 justify-content: space-between;
                                 align-items: center;
-                                background: rgba(255,255,255,0.03);
+                                background: var(--bg-glass);
                                 padding: 10px 15px;
                                 border-radius: 10px;
-                                border: 1px solid rgba(255,255,255,0.05);
+                                border: 1px solid var(--border-glass-light);
                             `;
                             item.innerHTML = `
                                 <div style="flex: 1; min-width: 0;">
@@ -2495,7 +2495,7 @@
                                     <div style="font-size: 11px; opacity: 0.6;">${new Date(t.date).toLocaleDateString('it-IT')} | ${t.category}</div>
                                 </div>
                                 <div style="text-align: right; margin: 0 15px;">
-                                    <div style="font-weight: 700; color: ${t.amount > 0 ? 'var(--accent-success)' : '#fff'};">€ ${Math.abs(t.amount).toFixed(2)}</div>
+                                    <div style="font-weight: 700; color: ${t.amount > 0 ? 'var(--accent-success)' : 'var(--accent-danger)'};">€ ${Math.abs(t.amount).toFixed(2)}</div>
                                 </div>
                                 <button onclick="removeTransactionFromTravel('${id}', '${t.id}')" style="background: none; border: none; color: #f43f5e; cursor: pointer; padding: 5px;" title="Rimuovi dal viaggio">
                                     <i data-lucide="minus-circle" style="width: 18px; height: 18px;"></i>
@@ -2505,7 +2505,7 @@
                         });
                     }
                     
-                    document.getElementById('travelDetailsModal').style.display = 'block';
+                    document.getElementById('travelDetailsModal').style.display = 'flex';
                     setTimeout(refreshIcons, 50);
                 }
             } catch (error) {
@@ -2622,12 +2622,12 @@
                         <span>Budget: € ${travel.budget.toFixed(2)}</span>
                     </div>
                     
-                    <div style="width: 100%; background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 15px;">
+                    <div style="width: 100%; background: var(--bg-glass-hover); height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 15px;">
                         <div style="width: ${percent}%; background: ${statusColor}; height: 100%; border-radius: 4px;"></div>
                     </div>
                     
                     <div style="display: flex; gap: 10px; font-size: 12px; opacity: 0.8;">
-                        <span style="background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px;">
+                        <span style="background: var(--bg-glass); border: 1px solid var(--border-glass); padding: 4px 8px; border-radius: 6px;">
                             <i data-lucide="list" style="width: 12px; height: 12px; vertical-align: middle;"></i> ${travel.transactionCount} transazioni
                         </span>
                     </div>
