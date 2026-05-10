@@ -64,10 +64,10 @@
 
     /* Modal contrast (Dark) */
     --bg-modal: rgba(11, 14, 23, 0.96);
-    --border-modal: rgba(255, 255, 255, 0.22);
+    --border-modal: rgba(var(--accent-primary-rgb), 0.55);
     --shadow-modal:
-        0 0 0 1px rgba(255, 255, 255, 0.07),
-        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 0 0 1px rgba(var(--accent-primary-rgb), 0.12),
+        0 0 40px rgba(var(--accent-primary-rgb), 0.22),
         0 30px 70px -12px rgba(0, 0, 0, 0.9);
 }
 
@@ -116,10 +116,11 @@
 
     /* Modal contrast (Light) */
     --bg-modal: rgba(255, 255, 255, 0.98);
-    --border-modal: rgba(15, 23, 42, 0.28);
+    --border-modal: rgba(var(--accent-primary-rgb), 0.40);
     --shadow-modal:
-        0 0 0 1px rgba(0, 0, 0, 0.06),
-        0 25px 60px rgba(0, 0, 0, 0.18);
+        0 0 0 1px rgba(var(--accent-primary-rgb), 0.08),
+        0 0 28px rgba(var(--accent-primary-rgb), 0.14),
+        0 20px 50px rgba(0, 0, 0, 0.14);
 }
 
 * {
@@ -1391,7 +1392,11 @@ body:not(.is-touch-device) .transaction-item-v2:hover {
     gap: 12px;
     box-shadow: var(--shadow-premium), 0 0 40px var(--accent-primary-glow);
     z-index: 9000;
-    transition: bottom 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    transition: bottom 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28); /* entrance */
+}
+
+.bulk-action-bar:not(.visible) {
+    transition: bottom 0.18s ease-in; /* fast exit */
     width: 92%;
     max-width: 400px;
 }

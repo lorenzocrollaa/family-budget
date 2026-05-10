@@ -2434,6 +2434,7 @@
                         const newTravelId = result.data.id;
                         const pendingIds = window._pendingTravelTransactionIds;
                         window._pendingTravelTransactionIds = null;
+                        clearSelection(); // hide selection bar immediately, before API call
                         try {
                             const assignResult = await apiCall(`/api/travels/${newTravelId}/transactions`, {
                                 method: 'POST',
@@ -2441,7 +2442,6 @@
                             });
                             if (assignResult.success) {
                                 showMessage(`${pendingIds.length} transazion${pendingIds.length === 1 ? 'e aggiunta' : 'i aggiunte'} a "${result.data.destination}"!`, 'success');
-                                clearSelection();
                                 await loadTravels();
                             }
                         } catch (e) {
