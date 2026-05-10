@@ -61,6 +61,14 @@
     /* Feature Toggles (Dark) */
     --grain-opacity: 0; /* Glossy for dark */
     --icon-drop-shadow: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+
+    /* Modal contrast (Dark) */
+    --bg-modal: rgba(11, 14, 23, 0.96);
+    --border-modal: rgba(255, 255, 255, 0.22);
+    --shadow-modal:
+        0 0 0 1px rgba(255, 255, 255, 0.07),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 30px 70px -12px rgba(0, 0, 0, 0.9);
 }
 
 /* Soft Frost Light Theme Variables */
@@ -105,6 +113,13 @@
     /* Feature Toggles (Light) */
     --grain-opacity: 0.06; /* Ruvido per light */
     --icon-drop-shadow: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+
+    /* Modal contrast (Light) */
+    --bg-modal: rgba(255, 255, 255, 0.98);
+    --border-modal: rgba(15, 23, 42, 0.28);
+    --shadow-modal:
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 25px 60px rgba(0, 0, 0, 0.18);
 }
 
 * {
@@ -833,15 +848,15 @@ input:focus, select:focus {
 }
 
 .modal-content {
-    background: var(--bg-card);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid var(--border-glass-light);
+    background: var(--bg-modal, var(--bg-card));
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid var(--border-modal, var(--border-glass-light));
     border-radius: var(--radius-lg);
     width: 100%;
     max-width: 500px;
     padding: 32px;
-    box-shadow: var(--shadow-premium), 0 0 100px rgba(0,0,0,0.2);
+    box-shadow: var(--shadow-modal, var(--shadow-premium));
     position: relative;
     max-height: 90vh;
     overflow-y: auto;
